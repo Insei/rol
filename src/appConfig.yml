@@ -1,0 +1,11 @@
+# Server configurations
+server:
+  host: "localhost"
+  port: 8080
+
+# Database credentials
+database:
+  sqlConnectionString: "root:67Edh68Tyt69@tcp(localhost:3306)/roldb?charset=utf8mb4&parseTime=True&loc=Local"
+  dbname: "roldb"
+  user: "root"
+  password: "67Edh68Tyt69"

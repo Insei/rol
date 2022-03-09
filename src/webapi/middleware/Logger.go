@@ -1,8 +1,11 @@
 package middleware
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"io/ioutil"
 	"math"
 	"net/http"
 	"os"
@@ -54,6 +57,14 @@ func Logger(logger logrus.FieldLogger, notLogged ...string) gin.HandlerFunc {
 			return
 		}
 
+		var bodyBytes []byte
+		if c.Request.Body != nil {
+			bodyBytes, _ = ioutil.ReadAll(c.Request.Body)
+		}
+
+		// Restore the io.ReadCloser to its original state
+		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+
 		entry := logger.WithFields(logrus.Fields{
 			"hostname":   hostname,
 			"statusCode": statusCode,
@@ -64,6 +75,7 @@ func Logger(logger logrus.FieldLogger, notLogged ...string) gin.HandlerFunc {
 			"referer":    referer,
 			"dataLength": dataLength,
 			"userAgent":  clientUserAgent,
+			"body":       string(bodyBytes),
 		})
 
 		if len(c.Errors) > 0 {
@@ -79,4 +91,24 @@ func Logger(logger logrus.FieldLogger, notLogged ...string) gin.HandlerFunc {
 			}
 		}
 	}
+}
+
+func GinBodyLogMiddleware(c *gin.Context) {
+	//blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
+	//c.Writer = blw
+	//
+	////ok this is an request with error, let's make a record for it
+	//// now print body (or log in your preferred way)
+	// Read the Body content
+	var bodyBytes []byte
+	if c.Request.Body != nil {
+		bodyBytes, _ = ioutil.ReadAll(c.Request.Body)
+	}
+
+	// Restore the io.ReadCloser to its original state
+	c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	fmt.Println("Response body: " + string(bodyBytes))
+
+	c.Next()
 }

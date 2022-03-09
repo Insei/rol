@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"rol/app/interfaces"
@@ -10,17 +11,19 @@ import (
 )
 
 type GormGenericEntityRepository struct {
-	Db *gorm.DB
+	Db     *gorm.DB
+	logger *logrus.Logger
 }
 
-func NewGormGenericEntityRepository(dialector gorm.Dialector) (*GormGenericEntityRepository, error) {
+func NewGormGenericEntityRepository(dialector gorm.Dialector, log *logrus.Logger) (*GormGenericEntityRepository, error) {
 	db, err := gorm.Open(dialector, &gorm.Config{})
 	db.AutoMigrate(
 		&entities.EthernetSwitch{},
 		&entities.EthernetSwitchPort{},
 	)
 	return &GormGenericEntityRepository{
-		Db: db,
+		Db:     db,
+		logger: log,
 	}, err
 }
 
@@ -39,12 +42,6 @@ func generateOrderString(orderBy string, orderDirection string) string {
 }
 
 func (ger *GormGenericEntityRepository) GetList(entities interface{}, orderBy string, orderDirection string, page int, size int, query string, args ...interface{}) (int64, error) {
-	if page < 1 {
-		page = 1
-	}
-	if size < 1 {
-		size = 10
-	}
 	offset, count := int64((page-1)*size), int64(0)
 	entityModel, orderString := mappers.GetEmptyEntityFromArrayType(entities), generateOrderString(orderBy, orderDirection)
 	gormQuery := ger.Db.Model(entityModel).Order(orderString)

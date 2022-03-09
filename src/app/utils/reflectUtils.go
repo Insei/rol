@@ -15,7 +15,7 @@ func GetStringFieldsNames(value interface{}, stringFieldNames *[]string) {
 	}
 	for i := 0; i < valueOf.NumField(); i++ {
 		fieldValue := valueOf.Field(i)
-		if fieldValue.Kind() == reflect.  {
+		if fieldValue.Kind() == reflect.Struct {
 			GetStringFieldsNames(fieldValue, stringFieldNames)
 			continue
 		}

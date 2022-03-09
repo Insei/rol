@@ -2,6 +2,8 @@
 !include ../IEntityDtoModel.puml
 
 interface IGenericEntityService {
+    GetList(dtoArr interface{}, search, orderBy, orderDirection string, page, pageSize int) (*dtos.Paginator, error)
+    --
     GetAll(dtoArr interface{}) error
     --
     GetById(dto IEntityDtoModel, id uint) error
@@ -12,6 +14,11 @@ interface IGenericEntityService {
     --
     Delete(model IEntityDtoModel, id uint) error
 }
+note left of IGenericEntityService::GetList
+  Get listed DTOs with filtering and pagination
+  Passing a pointer to an array of pointers to entities DTO
+  and filtering arguments
+end note
 note left of IGenericEntityService::GetAll
   Get all entities DTO.
   Passing a pointer to an array of pointers to entities DTO
