@@ -1,9 +1,24 @@
 package generic
 
-import "rol/app/interfaces"
+import (
+	"rol/app/interfaces"
+	"rol/dtos"
+)
 
 type IGenericEntityService interface {
-	GetList(dtoArr interface{}, search, orderBy, orderDirection string, page, pageSize int) (int64, error)
+	//GetList
+	//	Get list of elements with filtering and pagination.
+	//Params
+	//	dtoArr - pointer to array of pointers to the entity DTO.
+	//	search - string value to search
+	//	orderBy - order field name
+	//	orderDirection - Order direction, desc/asc
+	//	page - number of the page
+	//	pageSize - size of the page
+	//Return
+	//	paginator - struct with pagination info and items
+	//	error - if an error occurred, otherwise nil
+	GetList(dtoArr interface{}, search, orderBy, orderDirection string, page, pageSize int) (*dtos.Paginator, error)
 	//GetAll
 	//	Get all entities DTO from service.
 	//Params
@@ -32,6 +47,7 @@ type IGenericEntityService interface {
 	//Params
 	//  createDto - pointer to the entity DTO.
 	//Return
+	//	uint - entity id
 	//	error - if an error occurred, otherwise nil
 	Create(createDto interfaces.IEntityDtoModel) (uint, error)
 	//Delete

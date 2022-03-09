@@ -15,7 +15,8 @@ type HttpServer struct {
 
 func NewHttpServer(logger *logrus.Logger, service *generic.IGenericEntityService) HttpServer {
 	ginEngine := gin.New()
-	ginEngine.Use(middleware.Logger(logger), gin.Recovery())
+	ginEngine.Use(middleware.Logger(logger), middleware.Recovery(logger))
+	//ginEngine.Use(middleware.GinBodyLogMiddleware)
 	serv := HttpServer{
 		engine:  ginEngine,
 		service: service,
@@ -40,7 +41,7 @@ func (server *HttpServer) InitializeControllers() error {
 	return nil
 }
 
-func (server *HttpServer) Start() {
+func (server *HttpServer) Start(address string) {
 	server.InitializeRoutes()
-	server.engine.Run("localhost:8080")
+	server.engine.Run(address)
 }

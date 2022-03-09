@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"rol/app/interfaces/generic"
@@ -31,12 +32,14 @@ func (esc *EthernetSwitchController) GetList(ctx *gin.Context) {
 	}
 	pageSize := ctx.DefaultQuery("pageSize", "10")
 	pageSizeInt64, err := strconv.ParseInt(pageSize, 10, 64)
+	fmt.Printf("\nquery -- orderBy:%s, orderDirection:%s, search:%s, page:%s, pageSize:%s\n", orderBy, orderDirection, search, page, pageSize)
 	if err != nil {
+		fmt.Println("PageSize error!")
 		pageSizeInt64 = 10
 	}
 
-	esc.service.GetList(dtosArr, search, orderBy, orderDirection, int(pageInt64), int(pageSizeInt64))
-	utils.APIResponse(ctx, "Switches was successfully received", http.StatusOK, http.MethodGet, dtosArr)
+	listed, err := esc.service.GetList(dtosArr, search, orderBy, orderDirection, int(pageInt64), int(pageSizeInt64))
+	utils.APIResponse(ctx, "Switches was successfully received", http.StatusOK, http.MethodGet, listed)
 }
 
 func (esc *EthernetSwitchController) GetAll(ctx *gin.Context) {

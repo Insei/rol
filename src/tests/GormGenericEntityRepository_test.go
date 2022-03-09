@@ -3,7 +3,9 @@ package testss
 import (
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 	"os"
 	"path"
 	"rol/domain/base"
@@ -13,12 +15,19 @@ import (
 	"testing"
 )
 
-var testRepoFileName = "repository_test.db"
-var testRepoDbConnection = sqlite.Open(testRepoFileName)
-var testRepo, _ = infrastructure.NewGormGenericEntityRepository(testRepoDbConnection)
-var repoTestInsertedId uint = 0
+var testRepoFileName string
+var testRepoDbConnection gorm.Dialector
+var testRepo *infrastructure.GormGenericEntityRepository
+var repoTestInsertedId uint
 
 func Test_GormGenericEntityRepository_Prepare(t *testing.T) {
+	testRepoFileName = "repository_test.db"
+	testRepoDbConnection = sqlite.Open(testRepoFileName)
+	logger := logrus.New()
+	logger.SetOutput(os.Stdout)
+	testRepo, _ = infrastructure.NewGormGenericEntityRepository(testRepoDbConnection, logger)
+	repoTestInsertedId = 0
+
 	_, filename, _, _ := runtime.Caller(1)
 	if _, err := os.Stat(path.Join(path.Dir(filename), testRepoFileName)); errors.Is(err, os.ErrNotExist) {
 		return

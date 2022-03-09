@@ -2,21 +2,25 @@ package services
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"regexp"
 	"rol/app/interfaces"
 	"rol/app/interfaces/generic"
 	"rol/app/mappers"
 	"rol/app/utils"
+	"rol/dtos"
 	"strings"
 )
 
 type GenericEntityService struct {
 	repository generic.IGenericEntityRepository
+	logger     *logrus.Logger
 }
 
-func NewGenericEntityService(repo generic.IGenericEntityRepository) (*GenericEntityService, error) {
+func NewGenericEntityService(repo generic.IGenericEntityRepository, log *logrus.Logger) (*GenericEntityService, error) {
 	return &GenericEntityService{
 		repository: repo,
+		logger:     log,
 	}, nil
 }
 
@@ -49,8 +53,17 @@ func generateQuerySearchString(entity interface{}, search string) string {
 	return queryString
 }
 
-func (ges *GenericEntityService) GetList(dtoArr interface{}, search, orderBy, orderDirection string, page, pageSize int) (int64, error) {
+func (ges *GenericEntityService) GetList(dtoArr interface{}, search, orderBy, orderDirection string, page, pageSize int) (*dtos.Paginator, error) {
+	pageFinal := page
+	pageSizeFinal := pageSize
+	if page < 1 {
+		pageFinal = 1
+	}
+	if pageSize < 1 {
+		pageSizeFinal = 10
+	}
 	entities := mappers.GetEntityEmptyArray(dtoArr)
+
 	queryRepString := ""
 	var _ interface{} = nil
 	if len(search) > 3 {
@@ -59,9 +72,15 @@ func (ges *GenericEntityService) GetList(dtoArr interface{}, search, orderBy, or
 	} else {
 		queryRepString = ""
 	}
-	count, err := ges.repository.GetList(entities, orderBy, orderDirection, page, pageSize, queryRepString)
+	count, err := ges.repository.GetList(entities, orderBy, orderDirection, pageFinal, pageSizeFinal, queryRepString)
+
 	mappers.Map(entities, dtoArr)
-	return count, err
+	return &dtos.Paginator{
+		CurrentPage: pageFinal,
+		PageSize:    pageSizeFinal,
+		ItemsCount:  int(count),
+		Items:       dtoArr,
+	}, err
 }
 
 func (ges *GenericEntityService) GetAll(dtoArr interface{}) error {
