@@ -73,6 +73,10 @@ func (ges *GenericEntityService) GetList(dtoArr interface{}, search, orderBy, or
 		queryRepString = ""
 	}
 	count, err := ges.repository.GetList(entities, orderBy, orderDirection, pageFinal, pageSizeFinal, queryRepString)
+	if err != nil {
+		ges.logger.Errorf("[Generic service] getting list error: %s", err.Error())
+		return nil, err
+	}
 
 	mappers.Map(entities, dtoArr)
 	return &dtos.Paginator{
@@ -80,12 +84,16 @@ func (ges *GenericEntityService) GetList(dtoArr interface{}, search, orderBy, or
 		PageSize:    pageSizeFinal,
 		ItemsCount:  int(count),
 		Items:       dtoArr,
-	}, err
+	}, nil
 }
 
 func (ges *GenericEntityService) GetAll(dtoArr interface{}) error {
 	entities := mappers.GetEntityEmptyArray(dtoArr)
-	ges.repository.GetAll(entities)
+	err := ges.repository.GetAll(entities)
+	if err != nil {
+		ges.logger.Errorf("[Generic service] error getting all entities: %s", err.Error())
+		return err
+	}
 	mappers.Map(entities, dtoArr)
 	return nil
 }
@@ -94,6 +102,7 @@ func (ges *GenericEntityService) GetById(dto interfaces.IEntityDtoModel, id uint
 	err := ges.repository.GetById(entity, id)
 	mappers.Map(entity, dto)
 	if err != nil {
+		ges.logger.Errorf("[Generic service] error retrieving an entity by its id: %s", err.Error())
 		return err
 	}
 	return nil
@@ -102,11 +111,15 @@ func (ges *GenericEntityService) Update(updateDto interfaces.IEntityDtoModel, id
 	entity := mappers.GetEmptyEntity(updateDto)
 	err := ges.repository.GetById(entity, id)
 	if err != nil {
+		ges.logger.Errorf("[Generic service] error retrieving an entity by its id: %s", err.Error())
 		return err
 	}
 	mappers.Map(updateDto, entity)
-	ges.repository.Update(entity)
-
+	err = ges.repository.Update(entity)
+	if err != nil {
+		ges.logger.Errorf("[Generic service] error updating entity: %s", err.Error())
+		return err
+	}
 	return nil
 }
 func (ges *GenericEntityService) Create(createDto interfaces.IEntityDtoModel) (uint, error) {
@@ -114,6 +127,7 @@ func (ges *GenericEntityService) Create(createDto interfaces.IEntityDtoModel) (u
 	mappers.Map(createDto, entity)
 	id, err := ges.repository.Insert(entity)
 	if err != nil {
+		ges.logger.Errorf("[Generic service] error creating entity: %s", err.Error())
 		return 0, err
 	}
 	return id, nil
@@ -122,7 +136,12 @@ func (ges *GenericEntityService) Delete(dto interfaces.IEntityDtoModel, id uint)
 	entity := mappers.GetEmptyEntity(dto)
 	err := ges.repository.GetById(entity, id)
 	if err != nil {
+		ges.logger.Errorf("[Generic service] error retrieving an entity by its id: %s", err.Error())
 		return err
 	}
-	return ges.repository.Delete(entity)
+	err = ges.repository.Delete(entity)
+	if err != nil {
+		ges.logger.Errorf("[Generic service] error deleting entity: %s", err.Error())
+	}
+	return nil
 }

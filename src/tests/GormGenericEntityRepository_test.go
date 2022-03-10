@@ -30,6 +30,7 @@ func Test_GormGenericEntityRepository_Prepare(t *testing.T) {
 
 	_, filename, _, _ := runtime.Caller(1)
 	if _, err := os.Stat(path.Join(path.Dir(filename), testRepoFileName)); errors.Is(err, os.ErrNotExist) {
+		t.Error(os.ErrNotExist)
 		return
 	}
 	err := os.Remove(testRepoFileName)
@@ -48,7 +49,12 @@ func Test_GormGenericEntityRepository_Insert(t *testing.T) {
 		Username:    "AutoTesting",
 		Password:    "AutoTesting",
 	}
-	repoTestInsertedId, _ = testRepo.Insert(entity)
+	var err error
+
+	repoTestInsertedId, err = testRepo.Insert(entity)
+	if err != nil {
+		t.Errorf("got %q, wanted %q", err, "nil")
+	}
 	if repoTestInsertedId == 0 {
 		t.Errorf("got %q, wanted %q", repoTestInsertedId, " > 0")
 	}
@@ -95,7 +101,10 @@ func Test_GormGenericEntityRepository_GetAll(t *testing.T) {
 
 func Test_GormGenericEntityRepository_GetList(t *testing.T) {
 	entityArr := &[]*entities.EthernetSwitch{}
-	count, _ := testRepo.GetList(entityArr, "id", "", 1, 10, "")
+	count, err := testRepo.GetList(entityArr, "id", "", 1, 10, "")
+	if err != nil {
+		t.Errorf("got %q, wanted %q", err, "nil")
+	}
 	if count != 1 {
 		t.Errorf("got %q element, wanted %q element", count, 1)
 	}
@@ -127,7 +136,10 @@ func Test_GormGenericEntityRepository_GetAllAfterDelete(t *testing.T) {
 
 func Test_GormGenericEntityRepository_GetListAfterDelete(t *testing.T) {
 	entityArr := &[]*entities.EthernetSwitch{}
-	count, _ := testRepo.GetList(entityArr, "id", "", 1, 10, "")
+	count, err := testRepo.GetList(entityArr, "id", "", 1, 10, "")
+	if err != nil {
+		t.Errorf("got %q, wanted %q", err, "nil")
+	}
 	if count != 0 {
 		t.Errorf("got %q element, wanted %q element", count, 0)
 	}
@@ -150,7 +162,10 @@ func Test_GormGenericEntityRepository_Insert20(t *testing.T) {
 		repoTestInsertedId, _ = testRepo.Insert(entity)
 	}
 	entityArr := &[]*entities.EthernetSwitch{}
-	count, _ := testRepo.GetList(entityArr, "id", "", 1, 20, "")
+	count, err := testRepo.GetList(entityArr, "id", "", 1, 20, "")
+	if err != nil {
+		t.Errorf("got %q, wanted %q", err, "nil")
+	}
 	if count != 20 {
 		t.Errorf("got %q element, wanted %q element", count, 20)
 	}
@@ -158,7 +173,10 @@ func Test_GormGenericEntityRepository_Insert20(t *testing.T) {
 
 func Test_GormGenericEntityRepository_GetList_OrderDirection(t *testing.T) {
 	entityArr := &[]*entities.EthernetSwitch{}
-	count, _ := testRepo.GetList(entityArr, "id", "desc", 1, 20, "")
+	count, err := testRepo.GetList(entityArr, "id", "desc", 1, 20, "")
+	if err != nil {
+		t.Errorf("got %q, wanted %q", err, "nil")
+	}
 	if count != 20 {
 		t.Errorf("got %q element, wanted %q element", count, 20)
 	}
@@ -169,7 +187,10 @@ func Test_GormGenericEntityRepository_GetList_OrderDirection(t *testing.T) {
 
 func Test_GormGenericEntityRepository_GetList_Pagination(t *testing.T) {
 	entityArr := &[]*entities.EthernetSwitch{}
-	count, _ := testRepo.GetList(entityArr, "id", "", 2, 10, "")
+	count, err := testRepo.GetList(entityArr, "id", "", 2, 10, "")
+	if err != nil {
+		t.Errorf("got %q, wanted %q", err, "nil")
+	}
 	if len(*entityArr) != 10 {
 		t.Errorf("got %d element, wanted %d element", count, 10)
 	}
@@ -180,7 +201,10 @@ func Test_GormGenericEntityRepository_GetList_Pagination(t *testing.T) {
 
 func Test_GormGenericEntityRepository_GetList_Where(t *testing.T) {
 	entityArr := &[]*entities.EthernetSwitch{}
-	count, _ := testRepo.GetList(entityArr, "id", "", 2, 10, "name = ?", "AutoTesting 14")
+	count, err := testRepo.GetList(entityArr, "id", "", 2, 10, "name = ?", "AutoTesting 14")
+	if err != nil {
+		t.Errorf("got %q, wanted %q", err, "nil")
+	}
 	if count != 1 {
 		t.Errorf("got %d element, wanted %d element", count, 1)
 	}
@@ -194,9 +218,10 @@ func Test_GormGenericEntityRepository_CloseConnectionAndRemoveDb(t *testing.T) {
 	if err != nil {
 		t.Errorf("remove db failed:  %q", err)
 	}
-	sqlDb.Close()
-	err = os.Remove(testRepoFileName)
-	if err != nil {
+	if err := sqlDb.Close(); err != nil {
+		t.Errorf("close db failed: %s", err)
+	}
+	if err := os.Remove(testRepoFileName); err != nil {
 		t.Errorf("remove db failed:  %q", err)
 	}
 }

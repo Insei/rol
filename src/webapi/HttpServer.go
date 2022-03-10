@@ -11,37 +11,42 @@ import (
 type HttpServer struct {
 	engine  *gin.Engine
 	service *generic.IGenericEntityService
+	logger  *logrus.Logger
 }
 
-func NewHttpServer(logger *logrus.Logger, service *generic.IGenericEntityService) HttpServer {
+func NewHttpServer(log *logrus.Logger, service *generic.IGenericEntityService) HttpServer {
 	ginEngine := gin.New()
-	ginEngine.Use(middleware.Logger(logger), middleware.Recovery(logger))
+	ginEngine.Use(middleware.Logger(log), middleware.Recovery(log))
 	//ginEngine.Use(middleware.GinBodyLogMiddleware)
-	serv := HttpServer{
+	server := HttpServer{
 		engine:  ginEngine,
 		service: service,
+		logger:  log,
 	}
-	return serv
+	return server
 }
 
 func (server *HttpServer) InitializeRoutes() {
 	server.InitializeControllers()
 }
 
-func (server *HttpServer) InitializeControllers() error {
+func (server *HttpServer) InitializeControllers() {
 	switchContr := controllers.NewEthernetSwitchController(server.service)
 
 	groupRoute := server.engine.Group("/api/v1")
+
 	groupRoute.GET("/switch/list", switchContr.GetList)
 	groupRoute.GET("/switch/:id", switchContr.GetById)
 	groupRoute.GET("/switch", switchContr.GetAll)
 	groupRoute.POST("/switch", switchContr.Create)
 	groupRoute.PUT("/switch/:id", switchContr.Update)
-
-	return nil
 }
 
 func (server *HttpServer) Start(address string) {
 	server.InitializeRoutes()
-	server.engine.Run(address)
+	err := server.engine.Run(address)
+	if err != nil {
+		server.logger.Errorf("[Http server] start server error: %s", err.Error())
+		return
+	}
 }
