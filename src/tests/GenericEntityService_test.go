@@ -32,6 +32,7 @@ func Test_GenericEntityService_Prepare(t *testing.T) {
 	serviceTestCreatedId = 0
 	_, filename, _, _ := runtime.Caller(1)
 	if _, err := os.Stat(path.Join(path.Dir(filename), testServiceFileName)); errors.Is(err, os.ErrNotExist) {
+		t.Error(os.ErrNotExist)
 		return
 	}
 	err := os.Remove(testServiceFileName)
@@ -113,7 +114,10 @@ func Test_GenericEntityService_Create20(t *testing.T) {
 			},
 			Password: "TestPassword",
 		}
-		_, _ = testService.Create(&dto)
+		_, err := testService.Create(&dto)
+		if err != nil {
+			t.Errorf("got %q, wanted %s", err, "nil")
+		}
 	}
 
 	dtosArr := &[]*dtos.EthernetSwitchDto{}
@@ -219,11 +223,12 @@ func Test_GenericEntityService_GetAllAfterDelete(t *testing.T) {
 func Test_GenericEntityService_CloseConnectionAndRemoveDb(t *testing.T) {
 	sqlDb, err := testServiceRepo.(*infrastructure.GormGenericEntityRepository).Db.DB()
 	if err != nil {
-		t.Errorf("remove db failed:  %q", err)
+		t.Errorf("remove db failed:  %s", err)
 	}
-	sqlDb.Close()
-	err = os.Remove(testServiceFileName)
-	if err != nil {
-		t.Errorf("remove db failed:  %q", err)
+	if err := sqlDb.Close(); err != nil {
+		t.Errorf("close db failed: %s", err)
+	}
+	if err := os.Remove(testServiceFileName); err != nil {
+		t.Errorf("remove db failed:  %s", err)
 	}
 }

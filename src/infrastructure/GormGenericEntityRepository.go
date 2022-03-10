@@ -17,14 +17,22 @@ type GormGenericEntityRepository struct {
 
 func NewGormGenericEntityRepository(dialector gorm.Dialector, log *logrus.Logger) (*GormGenericEntityRepository, error) {
 	db, err := gorm.Open(dialector, &gorm.Config{})
-	db.AutoMigrate(
+	if err != nil {
+		log.Errorf("[Repository] error creating gorm repository: %s", err.Error())
+		return nil, err
+	}
+	err = db.AutoMigrate(
 		&entities.EthernetSwitch{},
 		&entities.EthernetSwitchPort{},
 	)
+	if err != nil {
+		log.Errorf("[Repository] database migration error: %s", err.Error())
+		return nil, err
+	}
 	return &GormGenericEntityRepository{
 		Db:     db,
 		logger: log,
-	}, err
+	}, nil
 }
 
 func generateOrderString(orderBy string, orderDirection string) string {
@@ -45,7 +53,11 @@ func (ger *GormGenericEntityRepository) GetList(entities interface{}, orderBy st
 	offset, count := int64((page-1)*size), int64(0)
 	entityModel, orderString := mappers.GetEmptyEntityFromArrayType(entities), generateOrderString(orderBy, orderDirection)
 	gormQuery := ger.Db.Model(entityModel).Order(orderString)
-	date, _ := time.Parse("2006-01-02", "1999-01-01")
+	date, err := time.Parse("2006-01-02", "1999-01-01")
+	if err != nil {
+		ger.logger.Errorf("[Repository] time parse error: %s", err.Error())
+		return 0, err
+	}
 	gormQuery = gormQuery.Where("deleted_at < ?", date)
 	if len(query) > 0 {
 		if len(args) > 0 {
@@ -62,12 +74,20 @@ func (ger *GormGenericEntityRepository) GetList(entities interface{}, orderBy st
 }
 
 func (ger *GormGenericEntityRepository) GetAll(entities interface{}) error {
-	date, _ := time.Parse("2006-01-02", "1999-01-01")
+	date, err := time.Parse("2006-01-02", "1999-01-01")
+	if err != nil {
+		ger.logger.Errorf("[Repository] time parse error: %s", err.Error())
+		return err
+	}
 	return ger.Db.Preload(clause.Associations).Where("deleted_at < ?", date).Find(entities).Error
 }
 
 func (ger *GormGenericEntityRepository) GetById(entity interfaces.IEntityModel, id uint) error {
-	date, _ := time.Parse("2006-01-02", "1999-01-01")
+	date, err := time.Parse("2006-01-02", "1999-01-01")
+	if err != nil {
+		ger.logger.Errorf("[Repository] time parse error: %s", err.Error())
+		return err
+	}
 	return ger.Db.Preload(clause.Associations).Where("deleted_at < ?", date).First(entity, id).Error
 }
 
@@ -77,6 +97,7 @@ func (ger *GormGenericEntityRepository) Update(entity interfaces.IEntityModel) e
 
 func (ger *GormGenericEntityRepository) Insert(entity interfaces.IEntityModel) (uint, error) {
 	if err := ger.Db.Create(entity).Error; err != nil {
+		ger.logger.Errorf("[Repository] creating entity error: %s", err.Error())
 		return 0, err
 	}
 	return entity.GetId(), nil
