@@ -30,7 +30,6 @@ func Test_GormGenericEntityRepository_Prepare(t *testing.T) {
 
 	_, filename, _, _ := runtime.Caller(1)
 	if _, err := os.Stat(path.Join(path.Dir(filename), testRepoFileName)); errors.Is(err, os.ErrNotExist) {
-		t.Error(os.ErrNotExist)
 		return
 	}
 	err := os.Remove(testRepoFileName)
