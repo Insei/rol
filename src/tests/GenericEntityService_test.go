@@ -32,7 +32,6 @@ func Test_GenericEntityService_Prepare(t *testing.T) {
 	serviceTestCreatedId = 0
 	_, filename, _, _ := runtime.Caller(1)
 	if _, err := os.Stat(path.Join(path.Dir(filename), testServiceFileName)); errors.Is(err, os.ErrNotExist) {
-		t.Error(os.ErrNotExist)
 		return
 	}
 	err := os.Remove(testServiceFileName)
