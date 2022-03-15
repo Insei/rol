@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"io"
 	"io/ioutil"
 	"runtime"
 
@@ -14,17 +13,6 @@ import (
 	"os"
 	"strings"
 	"time"
-)
-
-const (
-	green   = "\033[97;42m"
-	white   = "\033[90;47m"
-	yellow  = "\033[90;43m"
-	red     = "\033[97;41m"
-	blue    = "\033[97;44m"
-	magenta = "\033[97;45m"
-	cyan    = "\033[97;46m"
-	reset   = "\033[0m"
 )
 
 var (
@@ -95,20 +83,7 @@ func function(pc uintptr) []byte {
 	return name
 }
 
-func readBody(reader io.Reader) string {
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(reader)
-
-	s := buf.String()
-	return s
-}
-
 func Recovery(logger *logrus.Logger) gin.HandlerFunc {
-	//var logger *log.Logger
-	//out := os.Stderr
-	//if out != nil {
-	//	logger = log.New(out, "\n\n\x1b[31m", log.LstdFlags)
-	//}
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -137,30 +112,35 @@ func Recovery(logger *logrus.Logger) gin.HandlerFunc {
 					var bodyBytes []byte
 					if c.Request.Body != nil {
 						bodyBytes, _ = ioutil.ReadAll(c.Request.Body)
+						// Restore the io.ReadCloser to its original state
+						c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 					}
 
-					// Restore the io.ReadCloser to its original state
-					c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+					entry := logger.WithFields(logrus.Fields{
+						"headers": headersToStr,
+						"error":   err,
+						"body":    string(bodyBytes),
+						"stack":   string(stack),
+					})
 
-					if brokenPipe {
-						logger.Printf("%s\n%s%s", err, headersToStr, reset)
-					} else if gin.IsDebugging() {
-						fmt.Printf("[BODY] %s\n", string(bodyBytes))
-						logger.Printf("[Recovery] %s panic recovered:\n%s\n%s\n%s%s\n",
-							TimeFormat(time.Now()), headersToStr, err, stack, reset)
-					} else {
-						logger.Printf("[Recovery] %s panic recovered:\n%s\n%s%s\n",
-							TimeFormat(time.Now()), err, stack, reset)
-					}
+					entry.Error()
+
+					//if brokenPipe {
+					//	logger.Printf("%s\n%s%s", err, headersToStr, reset)
+					//} else if gin.IsDebugging() {
+					//	fmt.Printf("[BODY] %s\n", string(bodyBytes))
+					//	logger.Printf("[Recovery] %s panic recovered:\n%s\n%s\n%s%s\n",
+					//		TimeFormat(time.Now()), headersToStr, err, stack, reset)
+					//} else {
+					//	logger.Printf("[Recovery] %s panic recovered:\n%s\n%s%s\n",
+					//		TimeFormat(time.Now()), err, stack, reset)
+					//}
 				}
 				if brokenPipe {
 					// If the connection is dead, we can't write a status to it.
 					c.Error(err.(error)) // nolint: errcheck
 					c.Abort()
 				}
-				//else {
-				//	handle(c, err)
-				//}
 			}
 		}()
 		c.Next()

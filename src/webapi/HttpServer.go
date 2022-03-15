@@ -31,7 +31,7 @@ func (server *HttpServer) InitializeRoutes() {
 }
 
 func (server *HttpServer) InitializeControllers() {
-	switchContr := controllers.NewEthernetSwitchController(server.service)
+	switchContr := controllers.NewEthernetSwitchController(server.service, server.logger)
 
 	groupRoute := server.engine.Group("/api/v1")
 

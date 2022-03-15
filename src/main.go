@@ -10,6 +10,7 @@ import (
 	"rol/app/services"
 	"rol/infrastructure"
 	"rol/webapi"
+	"rol/webapi/utils"
 )
 
 func main() {
@@ -22,6 +23,7 @@ func main() {
 	// Setup logger
 	logger := logrus.New()
 	logger.SetOutput(os.Stdout)
+	logger.SetFormatter(&utils.Formatter{})
 	// Setup generic repo (infrastructure layer)
 	repository, _ = infrastructure.NewGormGenericEntityRepository(gormSqlConnection, logger)
 	//Setup Generic service (business layer, i.e. app)

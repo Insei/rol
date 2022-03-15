@@ -1,8 +1,12 @@
 package controllers
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+	"io/ioutil"
 	"net/http"
 	"rol/app/interfaces/generic"
 	"rol/dtos"
@@ -12,11 +16,13 @@ import (
 
 type EthernetSwitchController struct {
 	service generic.IGenericEntityService
+	logger  *logrus.Logger
 }
 
-func NewEthernetSwitchController(service *generic.IGenericEntityService) *EthernetSwitchController {
+func NewEthernetSwitchController(service *generic.IGenericEntityService, log *logrus.Logger) *EthernetSwitchController {
 	return &EthernetSwitchController{
 		service: *service,
+		logger:  log,
 	}
 }
 
@@ -68,11 +74,18 @@ func (esc *EthernetSwitchController) GetById(ctx *gin.Context) {
 
 func (esc *EthernetSwitchController) Create(ctx *gin.Context) {
 	dto := dtos.EthernetSwitchCreateDto{}
-	err := ctx.ShouldBindJSON(&dto)
 
+	err := ctx.ShouldBindJSON(&dto)
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 	}
+
+	// Restoring body in gin.Context for logging it later in middleware
+	buf, marshalErr := json.Marshal(dto)
+	if marshalErr != nil {
+		ctx.AbortWithError(http.StatusBadRequest, err)
+	}
+	ctx.Request.Body = ioutil.NopCloser(bytes.NewBuffer(buf))
 
 	esc.service.Create(&dto)
 }
@@ -80,6 +93,16 @@ func (esc *EthernetSwitchController) Create(ctx *gin.Context) {
 func (esc *EthernetSwitchController) Update(ctx *gin.Context) {
 	dto := dtos.EthernetSwitchUpdateDto{}
 	err := ctx.ShouldBindJSON(&dto)
+	if err != nil {
+		ctx.AbortWithError(http.StatusBadRequest, err)
+	}
+
+	// Restoring body in gin.Context for logging it later in middleware
+	buf, marshalErr := json.Marshal(dto)
+	if marshalErr != nil {
+		ctx.AbortWithError(http.StatusBadRequest, err)
+	}
+	ctx.Request.Body = ioutil.NopCloser(bytes.NewBuffer(buf))
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 	}
