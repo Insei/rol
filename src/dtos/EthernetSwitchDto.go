@@ -5,6 +5,6 @@ type EthernetSwitchDto struct {
 	BaseDto
 }
 
-func (esd *EthernetSwitchDto) Validate() error {
+func (esd EthernetSwitchDto) Validate() error {
 	return nil
 }

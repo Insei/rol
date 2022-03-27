@@ -5,6 +5,6 @@ type EthernetSwitchCreateDto struct {
 	Password string
 }
 
-func (esd *EthernetSwitchCreateDto) Validate() error {
+func (esd EthernetSwitchCreateDto) Validate() error {
 	return nil
 }
