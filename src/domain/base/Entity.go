@@ -9,10 +9,10 @@ type Entity struct {
 	DeletedAt time.Time `gorm:"index"`
 }
 
-func (ent *Entity) GetId() uint {
+func (ent Entity) GetId() uint {
 	return ent.ID
 }
 
-func (ent *Entity) SetDeleteTimeNow() {
+func (ent Entity) SetDeleted() {
 	ent.DeletedAt = time.Now()
 }
