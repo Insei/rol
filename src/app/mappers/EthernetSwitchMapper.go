@@ -2,20 +2,21 @@ package mappers
 
 import (
 	"rol/domain/entities"
+	"rol/domain/enums"
 	"rol/dtos"
 )
 
-func MapEthernetSwitchUpdateDto(dto *dtos.EthernetSwitchUpdateDto, model *entities.EthernetSwitch) {
-	model.SwitchModel = dto.SwitchModel
-	model.Name = dto.Name
-	model.Address = dto.Address
-	model.Password = dto.Password
-	model.Username = dto.Username
-	model.Serial = dto.Serial
+func MapEthernetSwitchUpdateDto(dto *dtos.EthernetSwitchUpdateDto, entity *entities.EthernetSwitch) {
+	entity.SwitchModel = (enums.EthernetSwitchModel)(dto.SwitchModel)
+	entity.Name = dto.Name
+	entity.Address = dto.Address
+	entity.Password = dto.Password
+	entity.Username = dto.Username
+	entity.Serial = dto.Serial
 }
 
 func MapEthernetSwitchCreateDto(dto *dtos.EthernetSwitchCreateDto, entity *entities.EthernetSwitch) {
-	entity.SwitchModel = dto.SwitchModel
+	entity.SwitchModel = (enums.EthernetSwitchModel)(dto.SwitchModel)
 	entity.Name = dto.Name
 	entity.Address = dto.Address
 	entity.Password = dto.Password
@@ -28,7 +29,7 @@ func MapEthernetSwitchDto(entity *entities.EthernetSwitch, dto *dtos.EthernetSwi
 	dto.Name = entity.Name
 	dto.Address = entity.Address
 	dto.Username = entity.Username
-	dto.SwitchModel = entity.SwitchModel
+	dto.SwitchModel = (int)(entity.SwitchModel)
 	dto.Serial = entity.Serial
 	dto.CreatedAt = entity.CreatedAt
 	dto.UpdatedAt = entity.UpdatedAt
