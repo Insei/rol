@@ -2,14 +2,13 @@ package services
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"regexp"
 	"rol/app/interfaces"
 	"rol/app/interfaces/generic"
 	"rol/app/mappers"
 	"rol/app/utils"
 	"rol/dtos"
-	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 type GenericEntityService struct {
@@ -22,21 +21,6 @@ func NewGenericEntityService(repo generic.IGenericEntityRepository, log *logrus.
 		repository: repo,
 		logger:     log,
 	}, nil
-}
-
-func toSnakeCase(entityStringFieldsNames *[]string) *[]string {
-	snakeNames := &[]string{}
-	matchAllCap := regexp.MustCompile("([a-z0-9])([A-Z])")
-	for i := 0; i < len(*entityStringFieldsNames); i++ {
-		containPass := strings.Contains(strings.ToLower((*entityStringFieldsNames)[i]), "pass")
-		containKey := strings.Contains(strings.ToLower((*entityStringFieldsNames)[i]), "key")
-		if containPass || containKey {
-			continue
-		}
-		snakeName := matchAllCap.ReplaceAllString((*entityStringFieldsNames)[i], "${1}_${2}")
-		*snakeNames = append(*snakeNames, strings.ToLower(snakeName))
-	}
-	return snakeNames
 }
 
 func generateQuerySearchString(entity interface{}, search string) string {

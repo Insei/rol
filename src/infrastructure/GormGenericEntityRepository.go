@@ -1,13 +1,14 @@
 package infrastructure
 
 import (
-	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"rol/app/interfaces"
 	"rol/app/mappers"
 	"rol/domain/entities"
 	"time"
+
+	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type GormGenericEntityRepository struct {
@@ -33,20 +34,6 @@ func NewGormGenericEntityRepository(dialector gorm.Dialector, log *logrus.Logger
 		Db:     db,
 		logger: log,
 	}, nil
-}
-
-func generateOrderString(orderBy string, orderDirection string) string {
-	order := ""
-	if len(orderBy) > 0 {
-		order = orderBy
-		if len(orderDirection) > 0 {
-			order = order + " " + orderDirection
-		}
-	}
-	if len(order) < 1 {
-		order = "id"
-	}
-	return order
 }
 
 func (ger *GormGenericEntityRepository) GetList(entities interface{}, orderBy string, orderDirection string, page int, size int, query string, args ...interface{}) (int64, error) {
