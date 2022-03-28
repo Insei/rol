@@ -18,15 +18,15 @@ type IGenericService[DtoType interfaces.IEntityDtoModel,
 	//	page - number of the page
 	//	pageSize - size of the page
 	//Return
-	//	paginator - pointer to the struct with pagination info and entities
+	//	*dtos.PaginatedListDto[DtoType] - pointer to the struct with pagination info and entities
 	//	error - if an error occurred, otherwise nil
 	GetList(search, orderBy, orderDirection string, page, pageSize int) (*dtos.PaginatedListDto[DtoType], error)
 	//GetById
 	//	Get entity by ID from service.
 	//Params
-	//  dto - pointer to the entity DTO.
 	//	id - entity id
 	//Return
+	//	*DtoType - pointer to the entity DTO.
 	//	error - if an error occurred, otherwise nil
 	GetById(id uint) (*DtoType, error)
 	//Update

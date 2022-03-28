@@ -14,17 +14,28 @@ type IGenericRepository[EntityType interfaces.IEntityModel] interface {
 	//	size - size of the page
 	//	queryBuilder - QueryBuilder is repo.NewQueryBuilder()
 	//Return
-	// 	entities - pointer to array of the entities.
+	// 	*[]EntityType - pointer to array of the entities.
 	//	error - if an error occurred, otherwise nil
 	GetList(orderBy string, orderDirection string, page int, size int, queryBuilder interfaces.IQueryBuilder) (*[]EntityType, error)
+	//Count
+	// Get count of entities with filtering
+	//Params
+	//	queryBuilder - QueryBuilder is repo.NewQueryBuilder()
+	//Return
+	//	int64 - count of entities
+	//	error - if an error occurred, otherwise nil
 	Count(queryBuilder interfaces.IQueryBuilder) (int64, error)
+	//NewQueryBuilder
+	//	Get QueryBuilder
+	//Return
+	//	IQueryBuilder pointer to object that implements IQueryBuilder interface for this repository
 	NewQueryBuilder() interfaces.IQueryBuilder
 	//GetById
 	//	Get entity by ID from repository.
 	//Params
 	//	id - entity id
 	//Return
-	//  entity - pointer to the entity.
+	//  *EntityType - pointer to the entity.
 	//	error - if an error occurred, otherwise nil
 	GetById(id uint) (*EntityType, error)
 	//Update
@@ -37,7 +48,7 @@ type IGenericRepository[EntityType interfaces.IEntityModel] interface {
 	//Insert
 	//	Add entity to the repository.
 	//Params
-	//  entity - the entity.
+	//  entity - pointer to the entity for update.
 	//Return
 	//	uint - entity id
 	//	error - if an error occurred, otherwise nil
@@ -45,7 +56,7 @@ type IGenericRepository[EntityType interfaces.IEntityModel] interface {
 	//Delete
 	//	Mark an entity as deleted in the repository.
 	//Params
-	//  entity - pointer to the entity.
+	//  id - id of the entity for delete.
 	//Return
 	//	error - if an error occurred, otherwise nil
 	Delete(id uint) error
