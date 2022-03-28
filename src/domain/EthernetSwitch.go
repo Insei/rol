@@ -1,15 +1,16 @@
-package entities
+package domain
 
-import (
-	"rol/domain/base"
-	"rol/domain/enums"
+type EthernetSwitchModel int
+
+const (
+	UBIQUITY_US24_250W = iota
 )
 
 type EthernetSwitch struct {
-	base.Entity
+	Entity
 	Name        string
 	Serial      string
-	SwitchModel enums.EthernetSwitchModel
+	SwitchModel EthernetSwitchModel
 	Address     string
 	Username    string
 	Password    string

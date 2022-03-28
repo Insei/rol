@@ -1,13 +1,12 @@
 package mappers
 
 import (
-	"rol/domain/entities"
-	"rol/domain/enums"
+	"rol/domain"
 	"rol/dtos"
 )
 
-func MapEthernetSwitchUpdateDto(dto *dtos.EthernetSwitchUpdateDto, entity *entities.EthernetSwitch) {
-	entity.SwitchModel = (enums.EthernetSwitchModel)(dto.SwitchModel)
+func MapEthernetSwitchUpdateDto(dto *dtos.EthernetSwitchUpdateDto, entity *domain.EthernetSwitch) {
+	entity.SwitchModel = (domain.EthernetSwitchModel)(dto.SwitchModel)
 	entity.Name = dto.Name
 	entity.Address = dto.Address
 	entity.Password = dto.Password
@@ -15,8 +14,8 @@ func MapEthernetSwitchUpdateDto(dto *dtos.EthernetSwitchUpdateDto, entity *entit
 	entity.Serial = dto.Serial
 }
 
-func MapEthernetSwitchCreateDto(dto *dtos.EthernetSwitchCreateDto, entity *entities.EthernetSwitch) {
-	entity.SwitchModel = (enums.EthernetSwitchModel)(dto.SwitchModel)
+func MapEthernetSwitchCreateDto(dto *dtos.EthernetSwitchCreateDto, entity *domain.EthernetSwitch) {
+	entity.SwitchModel = (domain.EthernetSwitchModel)(dto.SwitchModel)
 	entity.Name = dto.Name
 	entity.Address = dto.Address
 	entity.Password = dto.Password
@@ -24,7 +23,7 @@ func MapEthernetSwitchCreateDto(dto *dtos.EthernetSwitchCreateDto, entity *entit
 	entity.Serial = dto.Serial
 }
 
-func MapEthernetSwitchDto(entity *entities.EthernetSwitch, dto *dtos.EthernetSwitchDto) {
+func MapEthernetSwitchDto(entity *domain.EthernetSwitch, dto *dtos.EthernetSwitchDto) {
 	dto.Id = entity.ID
 	dto.Name = entity.Name
 	dto.Address = entity.Address
@@ -35,7 +34,7 @@ func MapEthernetSwitchDto(entity *entities.EthernetSwitch, dto *dtos.EthernetSwi
 	dto.UpdatedAt = entity.UpdatedAt
 }
 
-func MapEthernetSwitchArrayDto(models *[]*entities.EthernetSwitch, dtoses *[]*dtos.EthernetSwitchDto) {
+func MapEthernetSwitchArrayDto(models *[]*domain.EthernetSwitch, dtoses *[]*dtos.EthernetSwitchDto) {
 	for i := range *models {
 		dto := &dtos.EthernetSwitchDto{}
 		MapEthernetSwitchDto((*models)[i], dto)

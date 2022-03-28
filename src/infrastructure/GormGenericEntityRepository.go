@@ -3,7 +3,7 @@ package infrastructure
 import (
 	"rol/app/interfaces"
 	"rol/app/mappers"
-	"rol/domain/entities"
+	"rol/domain"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -23,8 +23,8 @@ func NewGormGenericEntityRepository(dialector gorm.Dialector, log *logrus.Logger
 		return nil, err
 	}
 	err = db.AutoMigrate(
-		&entities.EthernetSwitch{},
-		&entities.EthernetSwitchPort{},
+		&domain.EthernetSwitch{},
+		&domain.EthernetSwitchPort{},
 	)
 	if err != nil {
 		log.Errorf("[Repository] database migration error: %s", err.Error())

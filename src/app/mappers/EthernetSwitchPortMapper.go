@@ -1,34 +1,34 @@
 package mappers
 
 import (
-	"rol/domain/entities"
+	"rol/domain"
 	"rol/dtos"
 )
 
-func MapEthernetSwitchPortCreateDto(dto *dtos.EthernetSwitchPortCreateDto, model *entities.EthernetSwitchPort) {
-	model.Name = dto.Name
-	model.EthernetSwitchId = dto.EthernetSwitchId
-	model.PoeType = dto.PoeType
+func MapEthernetSwitchPortCreateDto(dto *dtos.EthernetSwitchPortCreateDto, entity *domain.EthernetSwitchPort) {
+	entity.Name = dto.Name
+	entity.EthernetSwitchId = dto.EthernetSwitchId
+	entity.PoeType = (domain.EthernetSwitchPoePortType)(dto.PoeType)
 }
 
-func MapEthernetSwitchPortUpdateDto(dto *dtos.EthernetSwitchPortUpdateDto, model *entities.EthernetSwitchPort) {
-	model.Name = dto.Name
-	model.PoeType = dto.PoeType
+func MapEthernetSwitchPortUpdateDto(dto *dtos.EthernetSwitchPortUpdateDto, entity *domain.EthernetSwitchPort) {
+	entity.Name = dto.Name
+	entity.PoeType = (domain.EthernetSwitchPoePortType)(dto.PoeType)
 }
 
-func MapEthernetSwitchPortDto(model *entities.EthernetSwitchPort, dto *dtos.EthernetSwitchPortDto) {
-	dto.Id = model.ID
-	dto.Name = model.Name
-	dto.PoeType = model.PoeType
-	dto.EthernetSwitchId = model.EthernetSwitchId
-	dto.CreatedAt = model.CreatedAt
-	dto.UpdatedAt = model.UpdatedAt
+func MapEthernetSwitchPortDto(entity *domain.EthernetSwitchPort, dto *dtos.EthernetSwitchPortDto) {
+	dto.Id = entity.ID
+	dto.Name = entity.Name
+	dto.PoeType = (int)(entity.PoeType)
+	dto.EthernetSwitchId = entity.EthernetSwitchId
+	dto.CreatedAt = entity.CreatedAt
+	dto.UpdatedAt = entity.UpdatedAt
 }
 
-func MapEthernetSwitchPortArrayDto(models *[]*entities.EthernetSwitchPort, dtoses *[]*dtos.EthernetSwitchPortDto) {
-	for i := range *models {
+func MapEthernetSwitchPortArrayDto(entities *[]*domain.EthernetSwitchPort, dtoses *[]*dtos.EthernetSwitchPortDto) {
+	for i := range *entities {
 		dto := &dtos.EthernetSwitchPortDto{}
-		MapEthernetSwitchPortDto((*models)[i], dto)
+		MapEthernetSwitchPortDto((*entities)[i], dto)
 		*dtoses = append(*dtoses, dto)
 	}
 }

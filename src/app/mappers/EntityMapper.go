@@ -1,15 +1,15 @@
 package mappers
 
 import (
-	"rol/domain/entities"
+	"rol/domain"
 )
 
 func GetEmptyEntityFromArrayType(entityArr interface{}) interface{} {
 	switch entityArr.(type) {
-	case *[]*entities.EthernetSwitch:
-		return &entities.EthernetSwitch{}
-	case *[]*entities.EthernetSwitchPort:
-		return &entities.EthernetSwitchPort{}
+	case *[]*domain.EthernetSwitch:
+		return &domain.EthernetSwitch{}
+	case *[]*domain.EthernetSwitchPort:
+		return &domain.EthernetSwitchPort{}
 	}
 	return nil
 }

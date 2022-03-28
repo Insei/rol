@@ -3,16 +3,16 @@ package testss
 import (
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 	"os"
 	"path"
-	"rol/domain/base"
-	"rol/domain/entities"
+	"rol/domain"
 	"rol/infrastructure"
 	"runtime"
 	"testing"
+
+	"github.com/sirupsen/logrus"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 var testRepoFileName string
@@ -39,8 +39,8 @@ func Test_GormGenericEntityRepository_Prepare(t *testing.T) {
 }
 
 func Test_GormGenericEntityRepository_Insert(t *testing.T) {
-	entity := &entities.EthernetSwitch{
-		Entity:      base.Entity{},
+	entity := &domain.EthernetSwitch{
+		Entity:      domain.Entity{},
 		Name:        "AutoTesting",
 		Serial:      "AutoTesting",
 		SwitchModel: 0,
@@ -63,7 +63,7 @@ func Test_GormGenericEntityRepository_Insert(t *testing.T) {
 }
 
 func Test_GormGenericEntityRepository_GetById(t *testing.T) {
-	entity := &entities.EthernetSwitch{}
+	entity := &domain.EthernetSwitch{}
 	err := testRepo.GetById(entity, repoTestInsertedId)
 	if err != nil {
 		t.Errorf("got %q, wanted %q", err, "nil")
@@ -74,8 +74,8 @@ func Test_GormGenericEntityRepository_GetById(t *testing.T) {
 }
 
 func Test_GormGenericEntityRepository_Update(t *testing.T) {
-	entity := &entities.EthernetSwitch{
-		Entity: base.Entity{ID: repoTestInsertedId},
+	entity := &domain.EthernetSwitch{
+		Entity: domain.Entity{ID: repoTestInsertedId},
 		Name:   "AutoTestingEdited",
 	}
 	err := testRepo.Update(entity)
@@ -88,7 +88,7 @@ func Test_GormGenericEntityRepository_Update(t *testing.T) {
 }
 
 func Test_GormGenericEntityRepository_GetAll(t *testing.T) {
-	entityArr := &[]*entities.EthernetSwitch{}
+	entityArr := &[]*domain.EthernetSwitch{}
 	err := testRepo.GetAll(entityArr)
 	if err != nil {
 		t.Errorf("got eror %q, wanted %q", err, "nil")
@@ -99,7 +99,7 @@ func Test_GormGenericEntityRepository_GetAll(t *testing.T) {
 }
 
 func Test_GormGenericEntityRepository_GetList(t *testing.T) {
-	entityArr := &[]*entities.EthernetSwitch{}
+	entityArr := &[]*domain.EthernetSwitch{}
 	count, err := testRepo.GetList(entityArr, "id", "", 1, 10, "")
 	if err != nil {
 		t.Errorf("got %q, wanted %q", err, "nil")
@@ -113,8 +113,8 @@ func Test_GormGenericEntityRepository_GetList(t *testing.T) {
 }
 
 func Test_GormGenericEntityRepository_Delete(t *testing.T) {
-	entity := &entities.EthernetSwitch{
-		Entity: base.Entity{ID: repoTestInsertedId},
+	entity := &domain.EthernetSwitch{
+		Entity: domain.Entity{ID: repoTestInsertedId},
 	}
 	err := testRepo.Delete(entity)
 	if err != nil {
@@ -123,7 +123,7 @@ func Test_GormGenericEntityRepository_Delete(t *testing.T) {
 }
 
 func Test_GormGenericEntityRepository_GetAllAfterDelete(t *testing.T) {
-	entityArr := &[]*entities.EthernetSwitch{}
+	entityArr := &[]*domain.EthernetSwitch{}
 	err := testRepo.GetAll(entityArr)
 	if err != nil {
 		t.Errorf("got eror %q, wanted %q", err, "nil")
@@ -134,7 +134,7 @@ func Test_GormGenericEntityRepository_GetAllAfterDelete(t *testing.T) {
 }
 
 func Test_GormGenericEntityRepository_GetListAfterDelete(t *testing.T) {
-	entityArr := &[]*entities.EthernetSwitch{}
+	entityArr := &[]*domain.EthernetSwitch{}
 	count, err := testRepo.GetList(entityArr, "id", "", 1, 10, "")
 	if err != nil {
 		t.Errorf("got %q, wanted %q", err, "nil")
@@ -149,8 +149,8 @@ func Test_GormGenericEntityRepository_GetListAfterDelete(t *testing.T) {
 
 func Test_GormGenericEntityRepository_Insert20(t *testing.T) {
 	for i := 2; i < 22; i++ {
-		entity := &entities.EthernetSwitch{
-			Entity:      base.Entity{},
+		entity := &domain.EthernetSwitch{
+			Entity:      domain.Entity{},
 			Name:        fmt.Sprintf("AutoTesting %d", i),
 			Serial:      "AutoTesting",
 			SwitchModel: 0,
@@ -160,7 +160,7 @@ func Test_GormGenericEntityRepository_Insert20(t *testing.T) {
 		}
 		repoTestInsertedId, _ = testRepo.Insert(entity)
 	}
-	entityArr := &[]*entities.EthernetSwitch{}
+	entityArr := &[]*domain.EthernetSwitch{}
 	count, err := testRepo.GetList(entityArr, "id", "", 1, 20, "")
 	if err != nil {
 		t.Errorf("got %q, wanted %q", err, "nil")
@@ -171,7 +171,7 @@ func Test_GormGenericEntityRepository_Insert20(t *testing.T) {
 }
 
 func Test_GormGenericEntityRepository_GetList_OrderDirection(t *testing.T) {
-	entityArr := &[]*entities.EthernetSwitch{}
+	entityArr := &[]*domain.EthernetSwitch{}
 	count, err := testRepo.GetList(entityArr, "id", "desc", 1, 20, "")
 	if err != nil {
 		t.Errorf("got %q, wanted %q", err, "nil")
@@ -185,7 +185,7 @@ func Test_GormGenericEntityRepository_GetList_OrderDirection(t *testing.T) {
 }
 
 func Test_GormGenericEntityRepository_GetList_Pagination(t *testing.T) {
-	entityArr := &[]*entities.EthernetSwitch{}
+	entityArr := &[]*domain.EthernetSwitch{}
 	count, err := testRepo.GetList(entityArr, "id", "", 2, 10, "")
 	if err != nil {
 		t.Errorf("got %q, wanted %q", err, "nil")
@@ -199,7 +199,7 @@ func Test_GormGenericEntityRepository_GetList_Pagination(t *testing.T) {
 }
 
 func Test_GormGenericEntityRepository_GetList_Where(t *testing.T) {
-	entityArr := &[]*entities.EthernetSwitch{}
+	entityArr := &[]*domain.EthernetSwitch{}
 	count, err := testRepo.GetList(entityArr, "id", "", 2, 10, "name = ?", "AutoTesting 14")
 	if err != nil {
 		t.Errorf("got %q, wanted %q", err, "nil")
