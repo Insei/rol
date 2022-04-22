@@ -12,10 +12,9 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: src
-          fetch-depth: 0
 
       - name: Yetus
-        uses: apache/yetus-test-patch-action@0.13.0
+        uses: apache/yetus-test-patch-action@main
         with:
           basedir: ./src
           buildtool: nobuild
