@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type EthernetSwitchService struct {
+type EthernetSwitchServiceTest struct {
 	*GenericService[dtos.EthernetSwitchDto,
 		dtos.EthernetSwitchCreateDto,
 		dtos.EthernetSwitchUpdateDto,
@@ -30,7 +30,7 @@ func NewEthernetSwitchService(rep interfaces.IGenericRepository[domain.EthernetS
 	dtos.EthernetSwitchUpdateDto,
 	domain.EthernetSwitch], error) {
 	genericService, err := NewGenericService[dtos.EthernetSwitchDto, dtos.EthernetSwitchCreateDto, dtos.EthernetSwitchUpdateDto, domain.EthernetSwitch](rep, log)
-	return &EthernetSwitchService{
+	return &EthernetSwitchServiceTest{
 		GenericService: genericService,
 	}, err
 }
@@ -46,7 +46,7 @@ func NewEthernetSwitchService(rep interfaces.IGenericRepository[domain.EthernetS
 //Return
 //	*dtos.PaginatedListDto[dtos.EthernetSwitchDto] - pointer to paginated list of ethernet switches
 //	error - if an error occurs, otherwise nil
-func (ess *EthernetSwitchService) GetList(ctx context.Context, search, orderBy, orderDirection string, page, pageSize int) (*dtos.PaginatedListDto[dtos.EthernetSwitchDto], error) {
+func (ess *EthernetSwitchServiceTest) GetList(ctx context.Context, search, orderBy, orderDirection string, page, pageSize int) (*dtos.PaginatedListDto[dtos.EthernetSwitchDto], error) {
 	return ess.GenericService.GetList(ctx, search, orderBy, orderDirection, page, pageSize)
 }
 
@@ -57,7 +57,7 @@ func (ess *EthernetSwitchService) GetList(ctx context.Context, search, orderBy, 
 //Return
 //	*dtos.EthernetSwitchDto - point to ethernet switch dto
 //	error - if an error occurs, otherwise nil
-func (ess *EthernetSwitchService) GetById(ctx context.Context, id uuid.UUID) (*dtos.EthernetSwitchDto, error) {
+func (ess *EthernetSwitchServiceTest) GetById(ctx context.Context, id uuid.UUID) (*dtos.EthernetSwitchDto, error) {
 	return ess.GenericService.GetById(ctx, id)
 }
 
@@ -68,7 +68,7 @@ func (ess *EthernetSwitchService) GetById(ctx context.Context, id uuid.UUID) (*d
 //	id - ethernet switch id
 //Return
 //	error - if an error occurs, otherwise nil
-func (ess *EthernetSwitchService) Update(ctx context.Context, updateDto dtos.EthernetSwitchUpdateDto, id uuid.UUID) error {
+func (ess *EthernetSwitchServiceTest) Update(ctx context.Context, updateDto dtos.EthernetSwitchUpdateDto, id uuid.UUID) error {
 	err := validators.ValidateEthernetSwitchUpdateDto(updateDto)
 	if err != nil {
 		return err
@@ -83,7 +83,7 @@ func (ess *EthernetSwitchService) Update(ctx context.Context, updateDto dtos.Eth
 //Return
 //	uuid.UUID - new ethernet switch id
 //	error - if an error occurs, otherwise nil
-func (ess *EthernetSwitchService) Create(ctx context.Context, createDto dtos.EthernetSwitchCreateDto) (uuid.UUID, error) {
+func (ess *EthernetSwitchServiceTest) Create(ctx context.Context, createDto dtos.EthernetSwitchCreateDto) (uuid.UUID, error) {
 	err := validators.ValidateEthernetSwitchCreateDto(createDto)
 	if err != nil {
 		return [16]byte{}, err
@@ -97,6 +97,6 @@ func (ess *EthernetSwitchService) Create(ctx context.Context, createDto dtos.Eth
 //	id - ethernet switch id
 //Return
 //	error - if an error occurs, otherwise nil
-func (ess *EthernetSwitchService) Delete(ctx context.Context, id uuid.UUID) error {
+func (ess *EthernetSwitchServiceTest) Delete(ctx context.Context, id uuid.UUID) error {
 	return ess.GenericService.Delete(ctx, id)
 }
