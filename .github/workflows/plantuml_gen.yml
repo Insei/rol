@@ -6,6 +6,11 @@ on:
       - main
     paths:
       - '**.puml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**.puml'
 # yamllint disable rule:line-length
 jobs:
   plantuml_svg_gen:
@@ -32,11 +37,13 @@ jobs:
           done
           rm plantuml.jar
       - name: Commit and Push
+        if: github.event_name != 'pull_request'
         run: |
           git add -A
           git commit -am "[plantuml] Automated svg generation"
           git push --set-upstream origin plantuml-svg-update-${{ github.run_number }}
       - name: Create Pull Request
+        if: github.event_name != 'pull_request'
         uses: actions/github-script@v6
         with:
           script: |
