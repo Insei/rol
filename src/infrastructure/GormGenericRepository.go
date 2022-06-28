@@ -72,7 +72,7 @@ func (ger *GormGenericRepository[EntityType]) addQueryToGorm(gormQuery *gorm.DB,
 	if queryBuilder != nil {
 		query, err := queryBuilder.Build()
 		if err != nil {
-			return err
+			return fmt.Errorf("query building error: %s", err.Error())
 		}
 		arrQuery := query.([]interface{})
 		// TODO: We need more checks here
@@ -127,11 +127,11 @@ func (ger *GormGenericRepository[EntityType]) GetList(ctx context.Context, order
 	gormQuery := ger.Db.Model(&model).Order(orderString)
 	err := ger.addQueryToGorm(gormQuery, queryBuilder)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error adding query to gorm: %s", err.Error())
 	}
 	err = gormQuery.Offset(int(offset)).Limit(size).Find(entities).Error
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("gorm query handling error: %s", err.Error())
 	}
 	return entities, nil
 }
@@ -151,11 +151,11 @@ func (ger *GormGenericRepository[EntityType]) Count(ctx context.Context, queryBu
 	gormQuery := ger.Db.Model(&model)
 	err := ger.addQueryToGorm(gormQuery, queryBuilder)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("error adding query to gorm: %s", err.Error())
 	}
 	err = gormQuery.Count(&count).Error
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("counting error: %s", err.Error())
 	}
 	ger.log(ctx, "debug", fmt.Sprintf("Count: OUT: count=%d", count))
 	return count, nil
@@ -174,7 +174,7 @@ func (ger *GormGenericRepository[EntityType]) GetById(ctx context.Context, id uu
 	entity := new(EntityType)
 	err := ger.Db.First(entity, id).Error
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting first: %s", err.Error())
 	}
 	ger.log(ctx, "debug", fmt.Sprintf("GetByID: entity=%+v", entity))
 	return entity, nil
@@ -203,7 +203,7 @@ func (ger *GormGenericRepository[EntityType]) Update(ctx context.Context, entity
 func (ger *GormGenericRepository[EntityType]) Insert(ctx context.Context, entity EntityType) (uuid.UUID, error) {
 	ger.log(ctx, "debug", fmt.Sprintf("Insert: entity=%+v", entity))
 	if err := ger.Db.Create(&entity).Error; err != nil {
-		return uuid.UUID{}, err
+		return uuid.UUID{}, fmt.Errorf("error creating entity: %s", err.Error())
 	}
 	ger.log(ctx, "debug", fmt.Sprintf("Insert: newId=%d", entity.GetID()))
 	return entity.GetID(), nil
@@ -228,10 +228,10 @@ func (ger *GormGenericRepository[EntityType]) Delete(ctx context.Context, id uui
 func (ger *GormGenericRepository[EntityType]) CloseDb() error {
 	sqlDb, err := ger.Db.DB()
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting DB: %s", err.Error())
 	}
 	if err := sqlDb.Close(); err != nil {
-		return err
+		return fmt.Errorf("error closing DB: %s", err.Error())
 	}
 	return nil
 }

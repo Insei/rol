@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"rol/app/interfaces"
 	"rol/app/validators"
@@ -33,7 +34,7 @@ func NewEthernetSwitchService(rep interfaces.IGenericRepository[domain.EthernetS
 	genericService, err := NewGenericService[dtos.EthernetSwitchDto, dtos.EthernetSwitchCreateDto, dtos.EthernetSwitchUpdateDto, domain.EthernetSwitch](rep, log)
 	return &EthernetSwitchService{
 		GenericService: genericService,
-	}, err
+	}, fmt.Errorf("error getting new switch service: %s", err.Error())
 }
 
 //GetList Get list of ethernet switches with filtering and pagination
@@ -72,7 +73,7 @@ func (ess *EthernetSwitchService) GetById(ctx context.Context, id uuid.UUID) (*d
 func (ess *EthernetSwitchService) Update(ctx context.Context, updateDto dtos.EthernetSwitchUpdateDto, id uuid.UUID) error {
 	err := validators.ValidateEthernetSwitchUpdateDto(updateDto)
 	if err != nil {
-		return err
+		return fmt.Errorf("error validating update dto: %s", err.Error())
 	}
 	return ess.GenericService.Update(ctx, updateDto, id)
 }
@@ -87,7 +88,7 @@ func (ess *EthernetSwitchService) Update(ctx context.Context, updateDto dtos.Eth
 func (ess *EthernetSwitchService) Create(ctx context.Context, createDto dtos.EthernetSwitchCreateDto) (uuid.UUID, error) {
 	err := validators.ValidateEthernetSwitchCreateDto(createDto)
 	if err != nil {
-		return [16]byte{}, err
+		return [16]byte{}, fmt.Errorf("error validating create dto: %s", err.Error())
 	}
 	return ess.GenericService.Create(ctx, createDto)
 }

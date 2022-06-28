@@ -120,11 +120,11 @@ func (ges *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) Ge
 	}
 	entities, err := ges.repository.GetList(ctx, orderBy, orderDirection, pageFinal, pageSizeFinal, searchQueryBuilder)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting list: %s", err.Error())
 	}
 	count, err := ges.repository.Count(ctx, searchQueryBuilder)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("counting error: %s", err.Error())
 	}
 	dtoArr := new([]DtoType)
 	for i := 0; i < len(*entities); i++ {
@@ -150,7 +150,7 @@ func (ges *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) ge
 	queryBuilder.Where("id", "=", id)
 	entities, err := ges.repository.GetList(ctx, "id", "DESC", 1, 1, queryBuilder)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting list: %s", err.Error())
 	}
 	if len(*entities) == 0 {
 		return nil, nil
@@ -169,7 +169,7 @@ func (ges *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) ge
 func (ges *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) GetById(ctx context.Context, id uuid.UUID) (*DtoType, error) {
 	entity, err := ges.getByIdExcludeDeleted(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting by id excluding deleted: %s", err.Error())
 	}
 	if entity == nil {
 		return nil, nil
@@ -192,7 +192,7 @@ func (ges *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) Ge
 func (ges *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) Update(ctx context.Context, updateDto UpdateDtoType, id uuid.UUID) error {
 	entity, err := ges.getByIdExcludeDeleted(ctx, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting by id excluding deleted: %s", err.Error())
 	}
 	if entity == nil {
 		errStr := fmt.Sprintf("[%s]: [update]: entity with id %d does not exist", ges.logSourceName, id)
@@ -205,7 +205,7 @@ func (ges *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) Up
 	}
 	err = ges.repository.Update(ctx, entity)
 	if err != nil {
-		return err
+		return fmt.Errorf("error updating entity: %s", err.Error())
 	}
 	return nil
 }
@@ -225,7 +225,7 @@ func (ges *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) Cr
 	}
 	id, err := ges.repository.Insert(ctx, *entity)
 	if err != nil {
-		return uuid.UUID{}, err
+		return uuid.UUID{}, fmt.Errorf("error creating entity: %s", err.Error())
 	}
 	return id, nil
 }
@@ -239,7 +239,7 @@ func (ges *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) Cr
 func (ges *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) Delete(ctx context.Context, id uuid.UUID) error {
 	entity, err := ges.getByIdExcludeDeleted(ctx, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting by id excluding deleted: %s", err.Error())
 	}
 	if entity == nil {
 		errStr := fmt.Sprintf("[%s]: [delete]: entity with id %d does not exist", ges.logSourceName, id)
@@ -252,7 +252,7 @@ func (ges *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) De
 
 	err = ges.repository.Update(ctx, entity)
 	if err != nil {
-		return err
+		return fmt.Errorf("error updating entity: %s", err.Error())
 	}
 	return nil
 }
