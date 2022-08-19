@@ -1,0 +1,54 @@
+@startuml
+
+!include ../services/EthernetSwitchVLANService.puml
+!include ../dto/EthernetSwitchVLAN/EthernetSwitchVLANCreateDto.puml
+!include ../dto/EthernetSwitchVLAN/EthernetSwitchVLANUpdateDto.puml
+!include ../dto/EthernetSwitchVLAN/EthernetSwitchVLANDto.puml
+
+package controllers {
+    class EthernetSwitchVLANGinController {
+        -service *services.EthernetSwitchVLANService
+        --
+        -logger  *logrus.Logger
+        --
+        +GetByID(ctx *gin.Context)
+        --
+        +GetList(ctx *gin.Context)
+        --
+        +Create(ctx *gin.Context)
+        --
+        +Update(ctx *gin.Context)
+        --
+        +Delete(ctx *gin.Context)
+    }
+
+    note left of EthernetSwitchVLANGinController::GetPortByID
+    Get VLAN by id
+    end note
+
+    note left of EthernetSwitchVLANGinController::GetPorts
+    Get list of VLANs with search and pagination
+    end note
+
+    note left of EthernetSwitchVLANGinController::CreatePort
+    Create new VLAN on switch
+    end note
+
+    note left of EthernetSwitchVLANGinController::UpdatePort
+    Update VLAN on switch by id
+    end note
+
+    note left of EthernetSwitchVLANGinController::DeletePort
+    Delete VLAN on switch
+    end note
+
+    EthernetSwitchVLANGinController .[hidden]up. EthernetSwitchPort
+    EthernetSwitchVLANGinController .up. EthernetSwitchPortServiceTypes
+    EthernetSwitchVLANService -left- EthernetSwitchVLANGinController::service
+
+    IGenericRepository .[hidden]left. EthernetSwitchVLANService
+}
+
+
+
+@enduml

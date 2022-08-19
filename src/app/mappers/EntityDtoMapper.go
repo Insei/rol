@@ -24,6 +24,11 @@ func MapDtoToEntity(dto interface{}, entity interface{}) error {
 		MapEthernetSwitchPortCreateDto(dto.(dtos.EthernetSwitchPortCreateDto), entity.(*domain.EthernetSwitchPort))
 	case dtos.EthernetSwitchPortUpdateDto:
 		MapEthernetSwitchPortUpdateDto(dto.(dtos.EthernetSwitchPortUpdateDto), entity.(*domain.EthernetSwitchPort))
+	//EthernetSwitchVLAN
+	case dtos.EthernetSwitchVLANCreateDto:
+		MapEthernetSwitchVLANCreateDto(dto.(dtos.EthernetSwitchVLANCreateDto), entity.(*domain.EthernetSwitchVLAN))
+	case dtos.EthernetSwitchVLANUpdateDto:
+		MapEthernetSwitchVLANUpdateDto(dto.(dtos.EthernetSwitchVLANUpdateDto), entity.(*domain.EthernetSwitchVLAN))
 	//HostNetworkVlan
 	case dtos.HostNetworkVlanCreateDto:
 		MapHostNetworkCreateDtoToEntity(dto.(dtos.HostNetworkVlanCreateDto), entity.(*domain.HostNetworkVlan))
@@ -49,6 +54,8 @@ func MapEntityToDto(entity interface{}, dto interface{}) error {
 	//EthernetSwitchPort
 	case domain.EthernetSwitchPort:
 		MapEthernetSwitchPortToDto(entity.(domain.EthernetSwitchPort), dto.(*dtos.EthernetSwitchPortDto))
+	case domain.EthernetSwitchVLAN:
+		MapEthernetSwitchVLANToDto(entity.(domain.EthernetSwitchVLAN), dto.(*dtos.EthernetSwitchVLANDto))
 	//HTTPLog
 	case domain.HTTPLog:
 		MapHTTPLogEntityToDto(entity.(domain.HTTPLog), dto.(*dtos.HTTPLogDto))

@@ -7,4 +7,6 @@ type EthernetSwitchPortBaseDto struct {
 	POEType string
 	// Name for this port
 	Name string
+	//PVID of this port
+	PVID int
 }

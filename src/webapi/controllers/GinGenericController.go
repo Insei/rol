@@ -85,7 +85,7 @@ func (g *GinGenericController[DtoType, CreateDtoType, UpdateDtoType, EntityType]
 //Return
 //	Returns http status code and response dto
 func (g *GinGenericController[DtoType, CreateDtoType, UpdateDtoType, EntityType]) GetByID(ctx *gin.Context) {
-	strID := ctx.Param("id")
+	strID := ctx.Query("id")
 	id, err := uuid.Parse(strID)
 	if err != nil {
 		controllerErr := ctx.AbortWithError(http.StatusBadRequest, err)

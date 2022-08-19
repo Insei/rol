@@ -1,0 +1,17 @@
+@startuml
+
+!include ../BaseDto.puml
+!include EthernetSwitchVLANBaseDto.puml
+
+package dtos {
+    class EthernetSwitchVLANDto {
+        +VlanID int
+        --
+        +EthernetSwitchID uuid.UUID
+    }
+
+    EthernetSwitchVLANDto -down-* BaseDto
+    EthernetSwitchVLANDto -down-* EthernetSwitchVLANBaseDto
+}
+
+@enduml

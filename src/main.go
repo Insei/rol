@@ -8,7 +8,6 @@ import (
 	"rol/infrastructure"
 	"rol/webapi"
 	"rol/webapi/controllers"
-
 	_ "rol/webapi/swagger"
 
 	"go.uber.org/fx"
@@ -51,15 +50,14 @@ func main() {
 			infrastructure.NewLogrusLogger,
 			infrastructure.NewEthernetSwitchPortRepository,
 			infrastructure.NewDeviceTemplateStorage,
-			infrastructure.NewYamlHostNetworkConfigStorage,
-			infrastructure.NewHostNetworkManager,
+			infrastructure.NewEthernetSwitchVLANRepository,
 			// Application logic
 			services.NewEthernetSwitchService,
 			services.NewHTTPLogService,
 			services.NewAppLogService,
 			services.NewEthernetSwitchPortService,
 			services.NewDeviceTemplateService,
-			services.NewHostNetworkVlanService,
+			services.NewEthernetSwitchVLANService,
 			// WEB API -> Server
 			webapi.NewGinHTTPServer,
 			// WEB API -> Controllers
@@ -68,7 +66,7 @@ func main() {
 			controllers.NewAppLogGinController,
 			controllers.NewEthernetSwitchPortGinController,
 			controllers.NewDeviceTemplateController,
-			controllers.NewHostNetworkVlanController,
+			controllers.NewEthernetSwitchVLANGinController,
 		),
 		fx.Invoke(
 			infrastructure.RegisterLogHooks,
@@ -77,7 +75,7 @@ func main() {
 			controllers.RegisterAppLogController,
 			controllers.RegisterEthernetSwitchPortController,
 			controllers.RegisterDeviceTemplateController,
-			controllers.RegisterHostNetworkVlanController,
+			controllers.RegisterEthernetSwitchVLANGinController,
 			webapi.StartHTTPServer,
 		),
 	)

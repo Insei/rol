@@ -1,0 +1,79 @@
+@startuml
+
+package app {
+    class IEthernetSwitchManager {
+        +GetVLANs() ([]int, error)
+        --
+        +GetVLANsOnPort(portName string) (int, []int, error)
+        --
+        +AddTaggedVLANOnPort(portName string, vlanID int) error
+        --
+        +AddUntaggedVLANOnPort(portName string, vlanID int) error
+        --
+        +RemoveVLANFromPort(portName string, vlanID int) error
+        --
+        +SetPortPVID(portName string, vlanID int) error
+        --
+        +DeleteVLAN(vlanID int) error
+        --
+        +CreateVLAN(vlanID int) error
+        --
+        +GetPOEPortStatus(portName string) (string, error)
+        --
+        +EnablePOEPort(portName, poeType string) error
+        --
+        +DisablePOEPort(portName string) error
+        --
+        +SaveConfig() error
+    }
+
+        note left of IEthernetSwitchManager::GetVLANs
+          Get all VLANs on switch
+        end note
+
+        note left of IEthernetSwitchManager::GetVLANsOnPort
+          Gets all VLANs on given port
+        end note
+
+        note left of IEthernetSwitchManager::AddTaggedVLANOnPort
+          Add tagged VLAN on given port
+        end note
+
+        note left of IEthernetSwitchManager::AddUntaggedVLANOnPort
+          Add untagged VLAN on given port
+        end note
+
+        note left of IEthernetSwitchManager::RemoveVLANFromPort
+          Remove VLAN from given port
+        end note
+
+        note left of IEthernetSwitchManager::SetPortPVID
+          Set port PVID
+        end note
+
+        note left of IEthernetSwitchManager::DeleteVLAN
+          Delete VLAN by id
+        end note
+
+        note left of IEthernetSwitchManager::CreateVLAN
+          Create vlan on switch
+        end note
+
+        note left of IEthernetSwitchManager::GetPOEPortStatus
+          Get poe status on given port
+        end note
+
+        note left of IEthernetSwitchManager::EnablePOEPort
+          Enable poe on give port
+        end note
+
+        note left of IEthernetSwitchManager::DisablePOEPort
+          Disable poe on give port
+        end note
+
+        note left of IEthernetSwitchManager::SaveConfig
+          Save current settings on switch
+        end note
+}
+
+@enduml

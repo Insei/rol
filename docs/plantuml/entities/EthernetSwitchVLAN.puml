@@ -1,0 +1,27 @@
+@startuml
+
+!include Entity.puml
+
+package domain {
+    class EthernetSwitchVLAN {
+        +VlanID int
+        --
+        +EthernetSwitchID uuid.UUID
+        --
+        +UntaggedPorts string
+        --
+        +TaggedPorts string
+    }
+
+    EthernetSwitchVLAN -down-* Entity
+
+
+    note "string of uuid IDs with ';' separator" as PortsNote
+
+    PortsNote -- EthernetSwitchVLAN::UntaggedPorts
+    PortsNote -- EthernetSwitchVLAN::TaggedPorts
+
+    PortsNote -right[hidden]- EthernetSwitchVLAN
+}
+
+@enduml

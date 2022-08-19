@@ -9,6 +9,7 @@ import (
 	"os"
 	"reflect"
 	"rol/app/interfaces"
+	"time"
 )
 
 //GenericRepositoryTest generic test for generic repository
@@ -60,20 +61,19 @@ func (g *GenericRepositoryTest[EntityType]) GenericRepositoryGetByID(id uuid.UUI
 }
 
 //GenericRepositoryUpdate test update entity
-func (g *GenericRepositoryTest[EntityType]) GenericRepositoryUpdate(entity EntityType) error {
-	err := g.Repository.Update(g.Context, &entity)
-
+func (g *GenericRepositoryTest[EntityType]) GenericRepositoryUpdate(updEntity EntityType) error {
+	entity, err := g.Repository.GetByID(g.Context, g.InsertedID)
+	if err != nil {
+		return err
+	}
+	beforeUpdTime := reflect.ValueOf(*entity).FieldByName("UpdatedAt").Interface().(time.Time)
+	err = g.Repository.Update(g.Context, &updEntity)
 	if err != nil {
 		return fmt.Errorf("update failed:  %s", err)
 	}
-	updatedEntity, err := g.Repository.GetByID(g.Context, g.InsertedID)
-	if err != nil {
-		return fmt.Errorf("get by id failed:  %s", err)
-	}
-	expectedName := reflect.ValueOf(entity).FieldByName("Name").String()
-	obtainedName := reflect.ValueOf(*updatedEntity).FieldByName("Name").String()
-	if obtainedName != expectedName {
-		return fmt.Errorf("unexpected name %s, expect %s", obtainedName, expectedName)
+	afterUpdTime := reflect.ValueOf(updEntity).FieldByName("UpdatedAt").Interface().(time.Time)
+	if !beforeUpdTime.Before(afterUpdTime) {
+		return fmt.Errorf("entity was not updated")
 	}
 	return nil
 }
@@ -141,12 +141,14 @@ func (g *GenericRepositoryTest[EntityType]) GenericRepositorySort() error {
 		return fmt.Errorf("array length %d, expect 10", len(*entityArr))
 	}
 	index := len(*entityArr) / 2
-	name := reflect.ValueOf(*entityArr).Index(index).FieldByName("Name").String()
+	firstTime := reflect.ValueOf(*entityArr).Index(index).FieldByName("CreatedAt").Interface().(time.Time)
+	secondTime := reflect.ValueOf(*entityArr).Index(index - 1).FieldByName("CreatedAt").Interface().(time.Time)
+	diff := secondTime.Sub(firstTime)
 
-	if name != fmt.Sprintf("AutoTesting_%d", index) {
-		return fmt.Errorf("sort failed: got %s name, expect AutoTesting_%d", name, index)
+	if diff.Seconds() >= 1 && diff.Seconds() < 2 {
+		return nil
 	}
-	return nil
+	return fmt.Errorf("sort failed: CreatedAt difference is bigger than 1 sec")
 }
 
 //GenericRepositoryFilter test filter

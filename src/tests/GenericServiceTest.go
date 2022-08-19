@@ -10,13 +10,14 @@ import (
 	"reflect"
 	"rol/app/interfaces"
 	"strings"
+	"time"
 )
 
 //GenericServiceTest generic test for generic service
 type GenericServiceTest[DtoType interface{},
-CreateDtoType interface{},
-UpdateDtoType interface{},
-EntityType interfaces.IEntityModel] struct {
+	CreateDtoType interface{},
+	UpdateDtoType interface{},
+	EntityType interfaces.IEntityModel] struct {
 	Service interfaces.IGenericService[
 		DtoType,
 		CreateDtoType,
@@ -31,13 +32,13 @@ EntityType interfaces.IEntityModel] struct {
 
 //NewGenericServiceTest GenericServiceTest constructor
 func NewGenericServiceTest[DtoType interface{},
-CreateDtoType interface{},
-UpdateDtoType interface{},
-EntityType interfaces.IEntityModel](
+	CreateDtoType interface{},
+	UpdateDtoType interface{},
+	EntityType interfaces.IEntityModel](
 	service interfaces.IGenericService[DtoType,
-	CreateDtoType,
-	UpdateDtoType,
-	EntityType],
+		CreateDtoType,
+		UpdateDtoType,
+		EntityType],
 	repo interfaces.IGenericRepository[EntityType], dbName string) *GenericServiceTest[DtoType, CreateDtoType, UpdateDtoType, EntityType] {
 	return &GenericServiceTest[DtoType, CreateDtoType, UpdateDtoType, EntityType]{
 		Service:    service,
@@ -76,7 +77,12 @@ func (g *GenericServiceTest[DtoType, CreateDtoType, UpdateDtoType, EntityType]) 
 
 //GenericServiceUpdate test update entity
 func (g *GenericServiceTest[DtoType, CreateDtoType, UpdateDtoType, EntityType]) GenericServiceUpdate(dto UpdateDtoType, id uuid.UUID) error {
-	err := g.Service.Update(g.Context, dto, id)
+	entity, err := g.Repository.GetByID(g.Context, g.InsertedID)
+	if err != nil {
+		return err
+	}
+	beforeUpdTime := reflect.ValueOf(*entity).FieldByName("UpdatedAt").Interface().(time.Time)
+	err = g.Service.Update(g.Context, dto, id)
 	if err != nil {
 		return fmt.Errorf("get by id failed: %s", err)
 	}
@@ -84,11 +90,9 @@ func (g *GenericServiceTest[DtoType, CreateDtoType, UpdateDtoType, EntityType]) 
 	if err != nil {
 		return fmt.Errorf("get by id failed: %s", err)
 	}
-	expectedName := reflect.ValueOf(dto).FieldByName("Name").String()
-	obtainedName := reflect.ValueOf(*obtainedDto).FieldByName("Name").String()
-
-	if obtainedName != expectedName {
-		return fmt.Errorf("unexpected entity name %q, expect %q", obtainedName, expectedName)
+	afterUpdTime := reflect.ValueOf(*obtainedDto).FieldByName("UpdatedAt").Interface().(time.Time)
+	if !beforeUpdTime.Before(afterUpdTime) {
+		return fmt.Errorf("entity was not updated")
 	}
 	return nil
 }

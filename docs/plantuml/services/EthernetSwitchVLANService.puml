@@ -1,0 +1,46 @@
+@startuml
+
+!include GenericService.puml
+!include ../repositories/EthernetSwitchRepository.puml
+!include ../repositories/EthernetSwitchPortRepository.puml
+
+package app {
+    class EthernetSwitchVLANService {
+        -switchPortRepository IGenericRepository<EthernetSwitchPort>
+        --
+        -switchRepository IGenericRepository<EthernetSwitch>
+        --
+        +GetVLANByID(ctx context.Context, switchID, id uuid.UUID) (*dtos.EthernetSwitchVLANDto, error)
+        --
+        +GetVLANs(ctx context.Context, switchID uuid.UUID, search, orderBy, orderDirection string, page, pageSize int) (*dtos.PaginatedListDto[dtos.EthernetSwitchVLANDto], error)
+        --
+        +CreateVLAN(ctx context.Context, switchID uuid.UUID, createDto dtos.EthernetSwitchVLANCreateDto) (uuid.UUID, error)
+        --
+        +UpdateVLAN(ctx context.Context, switchID, id uuid.UUID, updateDto dtos.EthernetSwitchVLANUpdateDto) error
+        --
+        +DeleteVLAN(ctx context.Context, switchID, id uuid.UUID) error
+    }
+
+    GenericService *-up- EthernetSwitchVLANService
+    EthernetSwitchVLANService::switchRepository -- EthernetSwitchRepository
+    EthernetSwitchVLANService::switchPortRepository -- EthernetSwitchPortRepository
+
+    note as EthernetSwitchVLANServiceTypes
+    EntityType is EthernetSwitchVLAN
+    CreateDtoType is EthernetSwitchVLANCreateDto
+    UpdateDtoType is EthernetSwitchVLANUpdateDto
+    DtoType is EthernetSwitchVLANDto
+    end note
+
+    EthernetSwitchVLANService .down. EthernetSwitchVLANServiceTypes
+    GenericService <.up. EthernetSwitchVLANServiceTypes
+
+    EthernetSwitchVLANServiceTypes .. EthernetSwitchVLANCreateDto
+    EthernetSwitchVLANServiceTypes .. EthernetSwitchVLANUpdateDto
+    EthernetSwitchVLANServiceTypes .. EthernetSwitchVLANDto
+
+    GormGenericRepository -[hidden]down- IGenericRepository
+    GormGenericRepository -[hidden]right- Entity
+}
+
+@enduml

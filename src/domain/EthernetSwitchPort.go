@@ -9,8 +9,10 @@ type EthernetSwitchPort struct {
 	//Name - name of switch port
 	Name string
 	//EthernetSwitchID - id of switch port
-	EthernetSwitchID uuid.UUID `gorm:"size:191,index"`
+	EthernetSwitchID uuid.UUID `gorm:"size:36;index"`
 	//POEType - switch port POE type
 	//can be: "poe", "poe+", "passive24", "none"
 	POEType string
+	//PVID - VLAN PVID
+	PVID int
 }
