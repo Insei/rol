@@ -3,9 +3,7 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"net/http"
 	"rol/app/services"
-	"rol/dtos"
 	"rol/webapi"
 	"strconv"
 )
@@ -50,7 +48,8 @@ func RegisterDeviceTemplateController(controller *DeviceTemplateController, serv
 // @param 	search 			query	string	false	"searchable value in entity"
 // @param 	page 			query	int		false	"page number"
 // @param 	pageSize 		query	int		false	"number of entities per page"
-// @Success 200 {object} dtos.ResponseDataDto{data=dtos.PaginatedListDto{items=[]dtos.DeviceTemplateDto}} ""
+// @Success	200		{object}	[]dtos.DeviceTemplateDto
+// @Failure	500		"Internal Server Error"
 // @router /template/device/ [get]
 func (d *DeviceTemplateController) GetList(ctx *gin.Context) {
 	orderBy := ctx.DefaultQuery("orderBy", "Name")
@@ -67,20 +66,7 @@ func (d *DeviceTemplateController) GetList(ctx *gin.Context) {
 		pageSizeInt64 = 10
 	}
 	paginatedList, err := d.service.GetList(ctx, search, orderBy, orderDirection, int(pageInt64), int(pageSizeInt64))
-	if err != nil {
-		controllerErr := ctx.AbortWithError(http.StatusBadRequest, err)
-		if controllerErr != nil {
-			d.logger.Errorf("%s : %s", err, controllerErr)
-		}
-	}
-	responseDto := &dtos.ResponseDataDto{
-		Status: dtos.ResponseStatusDto{
-			Code:    0,
-			Message: "",
-		},
-		Data: paginatedList,
-	}
-	ctx.JSON(http.StatusOK, responseDto)
+	handleWithData(ctx, err, paginatedList)
 }
 
 //GetByName Get device template by name
@@ -92,29 +78,12 @@ func (d *DeviceTemplateController) GetList(ctx *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @param 	name	path	string		true	"device template name"
-// @Success 200 {object} dtos.ResponseDataDto{data=dtos.DeviceTemplateDto}
+// @Success	200		{object}	dtos.DeviceTemplateDto
+// @Failure	404		"Not Found"
+// @Failure	500		"Internal Server Error"
 // @router /template/device/{name} [get]
 func (d *DeviceTemplateController) GetByName(ctx *gin.Context) {
 	name := ctx.Param("name")
-
 	dto, err := d.service.GetByName(ctx, name)
-	if err != nil {
-		controllerErr := ctx.AbortWithError(http.StatusBadRequest, err)
-		if controllerErr != nil {
-			d.logger.Errorf("%s : %s", err, controllerErr)
-		}
-		return
-	}
-	if dto == nil {
-		ctx.AbortWithStatus(http.StatusNotFound)
-		return
-	}
-	responseDto := &dtos.ResponseDataDto{
-		Status: dtos.ResponseStatusDto{
-			Code:    0,
-			Message: "",
-		},
-		Data: dto,
-	}
-	ctx.JSON(http.StatusOK, responseDto)
+	handleWithData(ctx, err, dto)
 }

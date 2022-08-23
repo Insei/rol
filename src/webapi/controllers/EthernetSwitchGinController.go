@@ -44,7 +44,8 @@ func RegisterEthernetSwitchController(controller *EthernetSwitchGinController, s
 // @param	 search			 query	string	false	"Searchable value in entity"
 // @param	 page			 query	int		false	"Page number"
 // @param	 pageSize		 query	int		false	"Number of entities per page"
-// @Success 200 {object} dtos.ResponseDataDto{data=dtos.PaginatedListDto{items=[]dtos.EthernetSwitchDto}}
+// @Success	200		{object}	[]dtos.EthernetSwitchDto
+// @Failure	500		"Internal Server Error"
 // @router /ethernet-switch/ [get]
 func (e *EthernetSwitchGinController) GetList(ctx *gin.Context) {
 	e.GinGenericController.GetList(ctx)
@@ -59,7 +60,9 @@ func (e *EthernetSwitchGinController) GetList(ctx *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @param	 id	path	string		true	"Ethernet switch ID"
-// @Success 200 {object} dtos.ResponseDataDto{data=dtos.EthernetSwitchDto}
+// @Success	200		{object}	dtos.EthernetSwitchDto
+// @Failure	404		"Not Found"
+// @Failure	500		"Internal Server Error"
 // @router /ethernet-switch/{id} [get]
 func (e *EthernetSwitchGinController) GetByID(ctx *gin.Context) {
 	e.GinGenericController.GetByID(ctx)
@@ -74,7 +77,9 @@ func (e *EthernetSwitchGinController) GetByID(ctx *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param request body dtos.EthernetSwitchCreateDto true "Ethernet switch fields"
-// @Success 200 {object} dtos.ResponseDataDto{data=uuid.UUID}
+// @Success	200		{object}	dtos.EthernetSwitchDto
+// @Failure	400		{object}	dtos.ValidationErrorDto
+// @Failure	500		"Internal Server Error"
 // @router /ethernet-switch/ [post]
 func (e *EthernetSwitchGinController) Create(ctx *gin.Context) {
 	e.GinGenericController.Create(ctx)
@@ -90,7 +95,10 @@ func (e *EthernetSwitchGinController) Create(ctx *gin.Context) {
 // @Produce  json
 // @param	 id	path	string		true	"Ethernet switch ID"
 // @Param request body dtos.EthernetSwitchUpdateDto true "Ethernet switch fields"
-// @Success 200 {object} dtos.ResponseDto
+// @Success	200		{object}	dtos.EthernetSwitchDto
+// @Failure	400		{object}	dtos.ValidationErrorDto
+// @Failure	404		"Not Found"
+// @Failure	500		"Internal Server Error"
 // @router /ethernet-switch/{id} [put]
 func (e *EthernetSwitchGinController) Update(ctx *gin.Context) {
 	e.GinGenericController.Update(ctx)
@@ -105,7 +113,9 @@ func (e *EthernetSwitchGinController) Update(ctx *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @param	 id	path	string		true	"Ethernet switch ID"
-// @Success 200 {object} dtos.ResponseDto
+// @Success	204		"OK, but No Content"
+// @Failure	404		"Not Found"
+// @Failure	500		"Internal Server Error"
 // @router /ethernet-switch/{id} [delete]
 func (e *EthernetSwitchGinController) Delete(ctx *gin.Context) {
 	e.GinGenericController.Delete(ctx)

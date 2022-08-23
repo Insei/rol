@@ -56,7 +56,8 @@ func RegisterEthernetSwitchVLANGinController(controller *EthernetSwitchVLANGinCo
 // @param	 search			 query	string	false	"Searchable value in entity"
 // @param	 page			 query	int		false	"Page number"
 // @param	 pageSize		 query	int		false	"Number of entities per page"
-// @Success 200 {object} dtos.ResponseDataDto{data=dtos.PaginatedListDto{items=[]dtos.EthernetSwitchVLANDto}}
+// @Success	200		{object}	[]dtos.EthernetSwitchVLANDto
+// @Failure	500		"Internal Server Error"
 // @router /ethernet-switch/{id}/vlans [get]
 func (e *EthernetSwitchVLANGinController) GetList(ctx *gin.Context) {
 	orderBy := ctx.DefaultQuery("orderBy", "Name")
@@ -75,25 +76,10 @@ func (e *EthernetSwitchVLANGinController) GetList(ctx *gin.Context) {
 	strSwitchID := ctx.Param("id")
 	switchID, err := uuid.Parse(strSwitchID)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusNotFound)
+		abortWithStatusByErrorType(ctx, err)
 	}
-
 	paginatedList, err := e.service.GetVLANs(ctx, switchID, search, orderBy, orderDirection, int(pageInt64), int(pageSizeInt64))
-	if err != nil {
-		controllerErr := ctx.AbortWithError(http.StatusBadRequest, err)
-		if controllerErr != nil {
-			e.logger.Errorf("%s : %s", err, controllerErr)
-		}
-		return
-	}
-	responseDto := &dtos.ResponseDataDto{
-		Status: dtos.ResponseStatusDto{
-			Code:    0,
-			Message: "",
-		},
-		Data: paginatedList,
-	}
-	ctx.JSON(http.StatusOK, responseDto)
+	handleWithData(ctx, err, paginatedList)
 }
 
 //GetByID get switch VLAN by id
@@ -106,31 +92,27 @@ func (e *EthernetSwitchVLANGinController) GetList(ctx *gin.Context) {
 // @Produce  json
 // @param	 id			query	string		true	"Ethernet switch ID"
 // @param	 vlanID		query	string		true	"Ethernet switch VLAN ID"
-// @Success 200 {object} dtos.ResponseDataDto{data=dtos.EthernetSwitchVLANDto}
+// @Success	200		{object}	dtos.EthernetSwitchVLANDto
+// @Failure	404		"Not Found"
+// @Failure	500		"Internal Server Error"
 // @router /ethernet-switch/{id}/vlans/{vlanID} [get]
 func (e *EthernetSwitchVLANGinController) GetByID(ctx *gin.Context) {
 	strID := ctx.Param("vlanID")
 	id, err := uuid.Parse(strID)
 	if err != nil {
-		controllerErr := ctx.AbortWithError(http.StatusNotFound, err)
-		if controllerErr != nil {
-			e.logger.Errorf("%s : %s", err, controllerErr)
-		}
+		abortWithStatusByErrorType(ctx, err)
 	}
 	strSwitchID := ctx.Param("id")
 	switchID, err := uuid.Parse(strSwitchID)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusNotFound)
+		abortWithStatusByErrorType(ctx, err)
 	}
 	dto, err := e.service.GetVLANByID(ctx, switchID, id)
 	if err != nil {
-		controllerErr := ctx.AbortWithError(http.StatusBadRequest, err)
-		if controllerErr != nil {
-			e.logger.Errorf("%s : %s", err, controllerErr)
-		}
+		abortWithStatusByErrorType(ctx, err)
 	}
 	if dto == nil {
-		ctx.AbortWithStatus(http.StatusNotFound)
+		abortWithStatusByErrorType(ctx, err)
 	}
 	responseDto := &dtos.ResponseDataDto{
 		Status: dtos.ResponseStatusDto{
@@ -152,39 +134,37 @@ func (e *EthernetSwitchVLANGinController) GetByID(ctx *gin.Context) {
 // @Produce  json
 // @param id query string true "Ethernet switch ID"
 // @Param request body dtos.EthernetSwitchVLANCreateDto true "Ethernet switch VLAN fields"
-// @Success 200 {object} dtos.ResponseDataDto{data=uuid.UUID}
+// @Success	200		{object}	dtos.EthernetSwitchVLANDto
+// @Failure	400		{object}	dtos.ValidationErrorDto
+// @Failure	500		"Internal Server Error"
 // @router /ethernet-switch/{id}/vlans [post]
 func (e *EthernetSwitchVLANGinController) Create(ctx *gin.Context) {
 	reqDto := new(dtos.EthernetSwitchVLANCreateDto)
 	err := ctx.ShouldBindJSON(&reqDto)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusBadRequest)
+		abortWithStatusByErrorType(ctx, err)
 	}
 
 	// Restoring body in gin.Context for logging it later in middleware
 	err = RestoreBody(reqDto, ctx)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		abortWithStatusByErrorType(ctx, err)
 	}
 	strSwitchID := ctx.Param("id")
 	switchID, err := uuid.Parse(strSwitchID)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusNotFound)
+		abortWithStatusByErrorType(ctx, err)
 	}
-	id, err := e.service.CreateVLAN(ctx, switchID, *reqDto)
+	dto, err := e.service.CreateVLAN(ctx, switchID, *reqDto)
 	if err != nil {
-		controllerErr := ctx.AbortWithError(http.StatusBadRequest, err)
-		if controllerErr != nil {
-			e.logger.Errorf("%s : %s", err, controllerErr)
-		}
-		return
+		abortWithStatusByErrorType(ctx, err)
 	}
 	responseDto := dtos.ResponseDataDto{
 		Status: dtos.ResponseStatusDto{
 			Code:    0,
 			Message: "",
 		},
-		Data: id,
+		Data: dto,
 	}
 	ctx.JSON(http.StatusOK, responseDto)
 }
@@ -199,42 +179,46 @@ func (e *EthernetSwitchVLANGinController) Create(ctx *gin.Context) {
 // @Produce  json
 // @param id query string true "Ethernet switch ID"
 // @Param request body dtos.EthernetSwitchVLANUpdateDto true "Ethernet switch fields"
-// @Success 200 {object} dtos.ResponseDto
+// @Success	200		{object}	dtos.EthernetSwitchVLANDto
+// @Failure	400		{object}	dtos.ValidationErrorDto
+// @Failure	404		"Not Found"
+// @Failure	500		"Internal Server Error"
 // @router /ethernet-switch/{id}/vlans [put]
 func (e *EthernetSwitchVLANGinController) Update(ctx *gin.Context) {
 	reqDto := new(dtos.EthernetSwitchVLANUpdateDto)
 	err := ctx.ShouldBindJSON(reqDto)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusBadRequest)
+		abortWithStatusByErrorType(ctx, err)
 	}
 
 	// Restoring body in gin.Context for logging it later in middleware
 	err = RestoreBody(reqDto, ctx)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		abortWithStatusByErrorType(ctx, err)
 	}
 
 	strSwitchID := ctx.Param("id")
 	switchID, err := uuid.Parse(strSwitchID)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusNotFound)
+		abortWithStatusByErrorType(ctx, err)
 	}
 
 	strPortID := ctx.Param("portID")
 	portID, err := uuid.Parse(strPortID)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusNotFound)
+		abortWithStatusByErrorType(ctx, err)
 	}
 
-	err = e.service.UpdateVLAN(ctx, switchID, portID, *reqDto)
+	dto, err := e.service.UpdateVLAN(ctx, switchID, portID, *reqDto)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		abortWithStatusByErrorType(ctx, err)
 	}
-	responseDto := &dtos.ResponseDto{
+	responseDto := &dtos.ResponseDataDto{
 		Status: dtos.ResponseStatusDto{
 			Code:    0,
 			Message: "",
 		},
+		Data: dto,
 	}
 	ctx.JSON(http.StatusOK, responseDto)
 }
@@ -249,24 +233,26 @@ func (e *EthernetSwitchVLANGinController) Update(ctx *gin.Context) {
 // @Produce  json
 // @param	 id			query	string		true	"Ethernet switch ID"
 // @param	 vlanID		query	string		true	"Ethernet switch VLAN ID"
-// @Success 200 {object} dtos.ResponseDto
+// @Success	204		"OK, but No Content"
+// @Failure	404		"Not Found"
+// @Failure	500		"Internal Server Error"
 // @router /ethernet-switch/{id}/vlans/{vlanID}  [delete]
 func (e *EthernetSwitchVLANGinController) Delete(ctx *gin.Context) {
 	strSwitchID := ctx.Param("id")
 	switchID, err := uuid.Parse(strSwitchID)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusNotFound)
+		abortWithStatusByErrorType(ctx, err)
 	}
 
 	strPortID := ctx.Param("portID")
 	portID, err := uuid.Parse(strPortID)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusNotFound)
+		abortWithStatusByErrorType(ctx, err)
 	}
 
 	err = e.service.DeleteVLAN(ctx, switchID, portID)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusBadRequest)
+		abortWithStatusByErrorType(ctx, err)
 	}
 	responseDto := &dtos.ResponseDto{
 		Status: dtos.ResponseStatusDto{

@@ -40,7 +40,8 @@ func RegisterAppLogController(controller *AppLogGinController, server *webapi.Gi
 // @param	 search			 query	string	false	"searchable value in entity"
 // @param	 page			 query	int		false	"page number"
 // @param	 pageSize		 query	int		false	"number of entities per page"
-// @Success 200 {object} dtos.ResponseDataDto{data=dtos.PaginatedListDto{items=[]dtos.AppLogDto}} ""
+// @Success	200		{object}	[]dtos.AppLogDto
+// @Failure	500		"Internal Server Error"
 // @router /log/app/ [get]
 func (a *AppLogGinController) GetList(ctx *gin.Context) {
 	a.GinGenericController.GetList(ctx)
@@ -55,7 +56,9 @@ func (a *AppLogGinController) GetList(ctx *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @param	 id	path	string		true	"log id"
-// @Success 200 {object} dtos.ResponseDataDto{data=dtos.AppLogDto}
+// @Success	200		{object}	dtos.AppLogDto
+// @Failure	404		"Not Found"
+// @Failure	500		"Internal Server Error"
 // @router /log/app/{id} [get]
 func (a *AppLogGinController) GetByID(ctx *gin.Context) {
 	a.GinGenericController.GetByID(ctx)

@@ -41,7 +41,8 @@ func RegisterHTTPLogController(controller *HTTPLogGinController, server *webapi.
 // @param	 search			 query	string	false	"searchable value in entity"
 // @param	 page			 query	int		false	"page number"
 // @param	 pageSize		 query	int		false	"number of entities per page"
-// @Success 200 {object} dtos.ResponseDataDto{data=dtos.PaginatedListDto{items=[]dtos.HTTPLogDto}} "desc"
+// @Success	200		{object}	[]dtos.HTTPLogDto
+// @Failure	500		"Internal Server Error"
 // @router /log/http/ [get]
 func (h *HTTPLogGinController) GetList(ctx *gin.Context) {
 	h.GinGenericController.GetList(ctx)
@@ -56,7 +57,9 @@ func (h *HTTPLogGinController) GetList(ctx *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @param	 id	path	string		true	"log id"
-// @Success 200 {object} dtos.ResponseDataDto{data=dtos.HTTPLogDto}
+// @Success	200		{object}	dtos.HTTPLogDto
+// @Failure	404		"Not Found"
+// @Failure	500		"Internal Server Error"
 // @router /log/http/{id} [get]
 func (h *HTTPLogGinController) GetByID(ctx *gin.Context) {
 	h.GinGenericController.GetByID(ctx)
