@@ -10,9 +10,9 @@ package app {
         --
         +GetById(ctx context.Context, id uuid.UUID) (*EntityType, error)
         --
-        +Update(ctx context.Context, entity *EntityType) error
+        +Update(ctx context.Context, entity *EntityType) (EntityType, error)
         --
-        +Insert(ctx context.Context, entity EntityType) (uuid.UUID, error)
+        +Insert(ctx context.Context, entity EntityType) (EntityType, error)
         --
         +Delete(ctx context.Context, id uuid.UUID) error
         --
