@@ -226,14 +226,15 @@ func (g *GormGenericRepository[EntityType]) GetByIDExtended(ctx context.Context,
 //	ctx - context is used only for logging
 //	entity - updated entity to save
 //Return
+//	EntityType - updated entity
 //	error - if an error occurs, otherwise nil
-func (g *GormGenericRepository[EntityType]) Update(ctx context.Context, entity *EntityType) error {
+func (g *GormGenericRepository[EntityType]) Update(ctx context.Context, entity *EntityType) (EntityType, error) {
 	g.log(ctx, "debug", fmt.Sprintf("Update: entity=%+v", entity))
 	err := g.Db.Save(entity).Error
 	if err != nil {
-		return errors.Internal.Wrap(err, "error saving entity")
+		return *new(EntityType), errors.Internal.Wrap(err, "error saving entity")
 	}
-	return nil
+	return *entity, nil
 }
 
 //Insert
@@ -242,15 +243,15 @@ func (g *GormGenericRepository[EntityType]) Update(ctx context.Context, entity *
 //	ctx - context is used only for logging
 //	entity - entity to save
 //Return
-//	uuid.UUID - new entity id
+//	EntityType - created entity
 //	error - if an error occurs, otherwise nil
-func (g *GormGenericRepository[EntityType]) Insert(ctx context.Context, entity EntityType) (uuid.UUID, error) {
+func (g *GormGenericRepository[EntityType]) Insert(ctx context.Context, entity EntityType) (EntityType, error) {
 	g.log(ctx, "debug", fmt.Sprintf("Insert: entity=%+v", entity))
 	if err := g.Db.Create(&entity).Error; err != nil {
-		return uuid.UUID{}, errors.Internal.Wrap(err, "gorm failed create entity")
+		return *new(EntityType), errors.Internal.Wrap(err, "gorm failed create entity")
 	}
 	g.log(ctx, "debug", fmt.Sprintf("Insert: newID=%d", entity.GetID()))
-	return entity.GetID(), nil
+	return entity, nil
 }
 
 //Delete entity from the database

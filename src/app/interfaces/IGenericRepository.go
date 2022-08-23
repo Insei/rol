@@ -61,7 +61,7 @@ type IGenericRepository[EntityType IEntityModel] interface {
 	//  entity - pointer to the entity.
 	//Return
 	//	error - if an error occurred, otherwise nil
-	Update(ctx context.Context, entity *EntityType) error
+	Update(ctx context.Context, entity *EntityType) (EntityType, error)
 	//Insert
 	//	Add entity to the repository.
 	//Params
@@ -70,7 +70,7 @@ type IGenericRepository[EntityType IEntityModel] interface {
 	//Return
 	//	uuid.UUID - entity id
 	//	error - if an error occurred, otherwise nil
-	Insert(ctx context.Context, entity EntityType) (uuid.UUID, error)
+	Insert(ctx context.Context, entity EntityType) (EntityType, error)
 	//Delete
 	//	Mark an entity as deleted in the repository.
 	//Params
