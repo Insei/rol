@@ -38,9 +38,9 @@ func NewDeviceTemplateService(storage interfaces.IGenericTemplateStorage[domain.
 //	page - page number
 //	pageSize - page size
 //Return
-//	*dtos.PaginatedListDto[dtos.DeviceTemplateDto] - pointer to paginated list of device templates
+//	*dtos.PaginatedItemsDto[dtos.DeviceTemplateDto] - pointer to paginated list of device templates
 //	error - if an error occurs, otherwise nil
-func (d *DeviceTemplateService) GetList(ctx context.Context, search, orderBy, orderDirection string, page, pageSize int) (*dtos.PaginatedListDto[dtos.DeviceTemplateDto], error) {
+func (d *DeviceTemplateService) GetList(ctx context.Context, search, orderBy, orderDirection string, page, pageSize int) (*dtos.PaginatedItemsDto[dtos.DeviceTemplateDto], error) {
 	pageFinal := page
 	pageSizeFinal := pageSize
 	if page < 1 {
@@ -68,11 +68,15 @@ func (d *DeviceTemplateService) GetList(ctx context.Context, search, orderBy, or
 			return nil, errors.Internal.Wrap(err, "failed to map template to dto")
 		}
 	}
-	paginatedDto := new(dtos.PaginatedListDto[dtos.DeviceTemplateDto])
-	paginatedDto.Page = pageFinal
-	paginatedDto.Size = pageSizeFinal
-	paginatedDto.Total = count
-	paginatedDto.Items = &dtosArr
+	paginatedDto := new(dtos.PaginatedItemsDto[dtos.DeviceTemplateDto])
+	paginatedDto.Pagination.Page = pageFinal
+	paginatedDto.Pagination.Size = pageSizeFinal
+	paginatedDto.Pagination.TotalCount = int(count)
+	paginatedDto.Pagination.TotalPages = pageSizeFinal / pageFinal
+	if pageSizeFinal%pageFinal > 0 {
+		paginatedDto.Pagination.TotalPages++
+	}
+	paginatedDto.Items = dtosArr
 	return paginatedDto, nil
 }
 

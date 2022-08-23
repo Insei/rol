@@ -86,7 +86,7 @@ func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) addS
 	queryBuilder = queryBuilder.WhereQuery(queryGroup)
 }
 
-func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) getListBasic(ctx context.Context, queryBuilder interfaces.IQueryBuilder, orderBy, orderDirection string, page, pageSize int) (*dtos.PaginatedListDto[DtoType], error) {
+func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) getListBasic(ctx context.Context, queryBuilder interfaces.IQueryBuilder, orderBy, orderDirection string, page, pageSize int) (*dtos.PaginatedItemsDto[DtoType], error) {
 	pageFinal := page
 	pageSizeFinal := pageSize
 	if page < 1 {
@@ -113,11 +113,15 @@ func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) getL
 		*dtoArr = append(*dtoArr, *dto)
 	}
 
-	paginatedDto := new(dtos.PaginatedListDto[DtoType])
-	paginatedDto.Page = pageFinal
-	paginatedDto.Size = pageSizeFinal
-	paginatedDto.Total = count
-	paginatedDto.Items = dtoArr
+	paginatedDto := new(dtos.PaginatedItemsDto[DtoType])
+	paginatedDto.Pagination.Page = pageFinal
+	paginatedDto.Pagination.Size = pageSizeFinal
+	paginatedDto.Pagination.TotalCount = int(count)
+	paginatedDto.Pagination.TotalPages = pageSizeFinal / pageFinal
+	if pageSizeFinal%pageFinal > 0 {
+		paginatedDto.Pagination.TotalPages++
+	}
+	paginatedDto.Items = *dtoArr
 	return paginatedDto, nil
 }
 
@@ -130,9 +134,9 @@ func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) getL
 //	page - page number
 //	pageSize - page size
 //Return
-//	*dtos.PaginatedListDto[DtoType] - pointer to paginated list
+//	*dtos.PaginatedItemsDto[DtoType] - pointer to paginated list
 //	error - if an error occurs, otherwise nil
-func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) GetList(ctx context.Context, search, orderBy, orderDirection string, page, pageSize int) (*dtos.PaginatedListDto[DtoType], error) {
+func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) GetList(ctx context.Context, search, orderBy, orderDirection string, page, pageSize int) (*dtos.PaginatedItemsDto[DtoType], error) {
 	searchQueryBuilder := g.repository.NewQueryBuilder(ctx)
 	g.excludeDeleted(searchQueryBuilder)
 	if len(search) > 3 {
@@ -174,23 +178,28 @@ func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) GetB
 	return g.getByIDBasic(ctx, id, queryBuilder)
 }
 
-func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) updateBasic(ctx context.Context, updateDto UpdateDtoType, id uuid.UUID, queryBuilder interfaces.IQueryBuilder) error {
+func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) updateBasic(ctx context.Context, updateDto UpdateDtoType, id uuid.UUID, queryBuilder interfaces.IQueryBuilder) (DtoType, error) {
 	entity, err := g.repository.GetByIDExtended(ctx, id, queryBuilder)
 	if err != nil {
-		return errors.Internal.Wrap(err, "failed to get entity by id")
+		return *new(DtoType), errors.Internal.Wrap(err, "failed to get entity by id")
 	}
 	if entity == nil {
-		return errors.NotFound.Wrap(err, "entity not found")
+		return *new(DtoType), errors.NotFound.Wrap(err, "entity not found")
 	}
 	err = mappers.MapDtoToEntity(updateDto, entity)
 	if err != nil {
-		return errors.Internal.Wrap(err, "error map entity to dto")
+		return *new(DtoType), errors.Internal.Wrap(err, "error map dto to entity")
 	}
-	err = g.repository.Update(ctx, entity)
+	updEntity, err := g.repository.Update(ctx, entity)
 	if err != nil {
-		return errors.Internal.Wrap(err, "failed to update entity in repository")
+		return *new(DtoType), errors.Internal.Wrap(err, "failed to update entity in repository")
 	}
-	return nil
+	dto := new(DtoType)
+	err = mappers.MapEntityToDto(updEntity, dto)
+	if err != nil {
+		return *new(DtoType), errors.Internal.Wrap(err, "error map entity to dto")
+	}
+	return *dto, nil
 }
 
 //Update save the changes to the existing entity
@@ -199,8 +208,9 @@ func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) upda
 //	updateDto - update dto
 //	id - entity id
 //Return
+//	DtoType - updated entity dto
 //	error - if an error occurs, otherwise nil
-func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) Update(ctx context.Context, updateDto UpdateDtoType, id uuid.UUID) error {
+func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) Update(ctx context.Context, updateDto UpdateDtoType, id uuid.UUID) (DtoType, error) {
 	queryBuilder := g.repository.NewQueryBuilder(ctx)
 	g.excludeDeleted(queryBuilder)
 	return g.updateBasic(ctx, updateDto, id, queryBuilder)
@@ -211,19 +221,24 @@ func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) Upda
 //	ctx - context is used only for logging
 //	createDto - create dto
 //Return
-//	uuid.UUID - new entity id
+//	DtoType - created entity dto
 //	error - if an error occurs, otherwise nil
-func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) Create(ctx context.Context, createDto CreateDtoType) (uuid.UUID, error) {
+func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) Create(ctx context.Context, createDto CreateDtoType) (DtoType, error) {
 	entity := new(EntityType)
+	outDto := new(DtoType)
 	err := mappers.MapDtoToEntity(createDto, entity)
 	if err != nil {
-		return uuid.UUID{}, errors.Internal.Wrap(err, "error map entity to dto")
+		return *outDto, errors.Internal.Wrap(err, "error map entity to dto")
 	}
-	id, err := g.repository.Insert(ctx, *entity)
+	newEntity, err := g.repository.Insert(ctx, *entity)
 	if err != nil {
-		return uuid.UUID{}, errors.Internal.Wrap(err, "create entity error")
+		return *outDto, errors.Internal.Wrap(err, "create entity error")
 	}
-	return id, nil
+	err = mappers.MapEntityToDto(newEntity, outDto)
+	if err != nil {
+		return *outDto, errors.Internal.Wrap(err, "error map dto to entity")
+	}
+	return *outDto, nil
 }
 
 //Delete mark entity as deleted
@@ -243,10 +258,10 @@ func (g *GenericService[DtoType, CreateDtoType, UpdateDtoType, EntityType]) Dele
 		return errors.NotFound.Wrap(err, "entity not found")
 	}
 
-	entityReflect := reflect.ValueOf(entity).Interface().(interfaces.IEntityModelDeletedAt)
-	entityReflect.SetDeleted()
+	//entityReflect := reflect.ValueOf(entity).Interface().(interfaces.IEntityModelDeletedAt)
+	//entityReflect.SetDeleted()
 
-	err = g.repository.Update(ctx, entity)
+	err = g.repository.Delete(ctx, id)
 	if err != nil {
 		return errors.Internal.Wrap(err, "failed to update entity in the repository")
 	}

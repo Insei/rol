@@ -119,44 +119,44 @@ func (e *EthernetSwitchPortService) GetPortByID(ctx context.Context, switchID, i
 //  switchID - Ethernet switch ID
 //	createDto - EthernetSwitchPortCreateDto
 //Return
-//	*dtos.EthernetSwitchPortDto - point to ethernet switch port dto, if existed, otherwise nil
+//	dtos.EthernetSwitchPortDto - created switch port
 //	error - if an error occurs, otherwise nil
-func (e *EthernetSwitchPortService) CreatePort(ctx context.Context, switchID uuid.UUID, createDto dtos.EthernetSwitchPortCreateDto) (uuid.UUID, error) {
+func (e *EthernetSwitchPortService) CreatePort(ctx context.Context, switchID uuid.UUID, createDto dtos.EthernetSwitchPortCreateDto) (dtos.EthernetSwitchPortDto, error) {
 	err := validators.ValidateEthernetSwitchPortCreateDto(createDto)
 	if err != nil {
-		return [16]byte{}, err //we already wrap error in validators
+		return dtos.EthernetSwitchPortDto{}, err //we already wrap error in validators
 	}
 	switchExist, err := e.switchIsExist(ctx, switchID)
 	if err != nil {
-		return [16]byte{}, errors.Internal.Wrap(err, "error when checking the existence of the switch")
+		return dtos.EthernetSwitchPortDto{}, errors.Internal.Wrap(err, "error when checking the existence of the switch")
 	}
 	if !switchExist {
-		return [16]byte{}, errors.NotFound.New("switch is not found")
+		return dtos.EthernetSwitchPortDto{}, errors.NotFound.New("switch is not found")
 	}
 	uniqName, err := e.portNameIsUniqueWithinTheSwitch(ctx, createDto.Name, switchID, [16]byte{})
 	if err != nil {
-		return [16]byte{}, errors.Internal.Wrap(err, "name uniqueness check error")
+		return dtos.EthernetSwitchPortDto{}, errors.Internal.Wrap(err, "name uniqueness check error")
 	}
 	if !uniqName {
 		err = errors.Validation.New(errors.ValidationErrorMessage)
-		return [16]byte{}, errors.AddErrorContext(err, "Name", "port with this name already exist")
+		return dtos.EthernetSwitchPortDto{}, errors.AddErrorContext(err, "Name", "port with this name already exist")
 	}
 
 	entity := new(domain.EthernetSwitchPort)
 	entity.EthernetSwitchID = switchID
 	err = mappers.MapDtoToEntity(createDto, entity)
 	if err != nil {
-		return [16]byte{}, errors.Internal.Wrap(err, "failed to map ethernet switch port dto to entity")
+		return dtos.EthernetSwitchPortDto{}, errors.Internal.Wrap(err, "failed to map ethernet switch port dto to entity")
 	}
 
 	ethernetSwitch, err := e.switchRepository.GetByIDExtended(ctx, switchID, nil)
 	if err != nil {
-		return [16]byte{}, errors.Internal.Wrap(err, "repository failed to get ethernet switch")
+		return dtos.EthernetSwitchPortDto{}, errors.Internal.Wrap(err, "repository failed to get ethernet switch")
 	}
 	switchManager := GetEthernetSwitchManager(*ethernetSwitch)
-	id, err := e.repository.Insert(ctx, *entity)
+	newEntity, err := e.repository.Insert(ctx, *entity)
 	if err != nil {
-		return [16]byte{}, errors.Internal.Wrap(err, "repository failed to insert port")
+		return dtos.EthernetSwitchPortDto{}, errors.Internal.Wrap(err, "repository failed to insert port")
 	}
 	if createDto.PVID > 1 {
 		VLANs, _ := switchManager.GetVLANs()
@@ -167,14 +167,19 @@ func (e *EthernetSwitchPortService) CreatePort(ctx context.Context, switchID uui
 			}
 		}
 		if !vlanExist {
-			return [16]byte{}, errors.Internal.New("cannot set PVID for a non-existent VLAN")
+			return dtos.EthernetSwitchPortDto{}, errors.Internal.New("cannot set PVID for a non-existent VLAN")
 		}
 		err = switchManager.SetPortPVID(createDto.Name, createDto.PVID)
 		if err != nil {
-			return [16]byte{}, errors.Internal.Wrap(err, "set port PVID failed")
+			return dtos.EthernetSwitchPortDto{}, errors.Internal.Wrap(err, "set port PVID failed")
 		}
 	}
-	return id, nil
+	dto := dtos.EthernetSwitchPortDto{}
+	err = mappers.MapEntityToDto(newEntity, &dto)
+	if err != nil {
+		return dtos.EthernetSwitchPortDto{}, errors.Internal.Wrap(err, "failed to map entity to dto")
+	}
+	return dto, nil
 }
 
 //UpdatePort Update ethernet switch port
@@ -184,43 +189,43 @@ func (e *EthernetSwitchPortService) CreatePort(ctx context.Context, switchID uui
 //	id - entity id
 //  updateDto - dtos.EthernetSwitchPortUpdateDto DTO for updating entity
 //Return
-//	*dtos.EthernetSwitchPortDto - point to ethernet switch port dto, if existed, otherwise nil
+//	dtos.EthernetSwitchPortDto - updated switch port
 //	error - if an error occurs, otherwise nil
-func (e *EthernetSwitchPortService) UpdatePort(ctx context.Context, switchID, id uuid.UUID, updateDto dtos.EthernetSwitchPortUpdateDto) error {
+func (e *EthernetSwitchPortService) UpdatePort(ctx context.Context, switchID, id uuid.UUID, updateDto dtos.EthernetSwitchPortUpdateDto) (dtos.EthernetSwitchPortDto, error) {
 	err := validators.ValidateEthernetSwitchPortUpdateDto(updateDto)
 	if err != nil {
-		return err // we already wrap error in validators
+		return dtos.EthernetSwitchPortDto{}, err // we already wrap error in validators
 	}
 	switchExist, err := e.switchIsExist(ctx, switchID)
 	if err != nil {
-		return errors.Internal.Wrap(err, "error when checking the existence of the switch")
+		return dtos.EthernetSwitchPortDto{}, errors.Internal.Wrap(err, "error when checking the existence of the switch")
 	}
 	if !switchExist {
-		return errors.NotFound.New("switch is not found")
+		return dtos.EthernetSwitchPortDto{}, errors.NotFound.New("switch is not found")
 	}
 	uniqName, err := e.portNameIsUniqueWithinTheSwitch(ctx, updateDto.Name, switchID, id)
 	if err != nil {
-		return errors.Internal.Wrap(err, "name uniqueness check error")
+		return dtos.EthernetSwitchPortDto{}, errors.Internal.Wrap(err, "name uniqueness check error")
 	}
 	if !uniqName {
 		err = errors.Validation.New(errors.ValidationErrorMessage)
-		return errors.AddErrorContext(err, "Name", "port with this name already exist")
+		return dtos.EthernetSwitchPortDto{}, errors.AddErrorContext(err, "Name", "port with this name already exist")
 	}
 	ethernetSwitch, err := e.switchRepository.GetByIDExtended(ctx, switchID, nil)
 	if err != nil {
-		return errors.Internal.Wrap(err, "repository failed to get ethernet switch")
+		return dtos.EthernetSwitchPortDto{}, errors.Internal.Wrap(err, "repository failed to get ethernet switch")
 	}
 	switchManager := GetEthernetSwitchManager(*ethernetSwitch)
 	queryBuilder := e.repository.NewQueryBuilder(ctx)
 	e.excludeDeleted(queryBuilder)
 	queryBuilder.Where("EthernetSwitchId", "==", switchID)
-	err = e.updateBasic(ctx, updateDto, id, queryBuilder)
+	dto, err := e.updateBasic(ctx, updateDto, id, queryBuilder)
 	if err != nil {
-		return errors.Internal.Wrap(err, "service failed to update port")
+		return dtos.EthernetSwitchPortDto{}, errors.Internal.Wrap(err, "service failed to update port")
 	}
 	if updateDto.PVID > 1 {
 		if switchManager == nil {
-			return nil
+			return dtos.EthernetSwitchPortDto{}, nil
 		}
 		VLANs, _ := switchManager.GetVLANs()
 		vlanExist := false
@@ -230,14 +235,14 @@ func (e *EthernetSwitchPortService) UpdatePort(ctx context.Context, switchID, id
 			}
 		}
 		if !vlanExist {
-			return errors.Internal.New("cannot set PVID for a non-existent VLAN")
+			return dtos.EthernetSwitchPortDto{}, errors.Internal.New("cannot set PVID for a non-existent VLAN")
 		}
 		err = switchManager.SetPortPVID(updateDto.Name, updateDto.PVID)
 		if err != nil {
-			return errors.Internal.Wrap(err, "set port PVID failed")
+			return dtos.EthernetSwitchPortDto{}, errors.Internal.Wrap(err, "set port PVID failed")
 		}
 	}
-	return nil
+	return dto, nil
 }
 
 //GetPorts Get list of ethernet switch ports with filtering and pagination
@@ -250,9 +255,9 @@ func (e *EthernetSwitchPortService) UpdatePort(ctx context.Context, switchID, id
 //	page - page number
 //	pageSize - page size
 //Return
-//	*dtos.PaginatedListDto[dtos.EthernetSwitchPortDto] - pointer to paginated list of ethernet switches
+//	*dtos.PaginatedItemsDto[dtos.EthernetSwitchPortDto] - pointer to paginated list of ethernet switches
 //	error - if an error occurs, otherwise nil
-func (e *EthernetSwitchPortService) GetPorts(ctx context.Context, switchID uuid.UUID, search, orderBy, orderDirection string, page, pageSize int) (*dtos.PaginatedListDto[dtos.EthernetSwitchPortDto], error) {
+func (e *EthernetSwitchPortService) GetPorts(ctx context.Context, switchID uuid.UUID, search, orderBy, orderDirection string, page, pageSize int) (*dtos.PaginatedItemsDto[dtos.EthernetSwitchPortDto], error) {
 	switchExist, err := e.switchIsExist(ctx, switchID)
 	if err != nil {
 		return nil, errors.Internal.Wrap(err, "error when checking the existence of the switch")

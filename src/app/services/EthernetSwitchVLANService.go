@@ -123,9 +123,9 @@ func (e *EthernetSwitchVLANService) GetVLANByID(ctx context.Context, switchID, i
 //	page - page number
 //	pageSize - page size
 //Return
-//	*dtos.PaginatedListDto[dtos.EthernetSwitchVLANDto] - pointer to paginated list of ethernet switch VLANs
+//	*dtos.PaginatedItemsDto[dtos.EthernetSwitchVLANDto] - pointer to paginated list of ethernet switch VLANs
 //	error - if an error occurs, otherwise nil
-func (e *EthernetSwitchVLANService) GetVLANs(ctx context.Context, switchID uuid.UUID, search, orderBy, orderDirection string, page, pageSize int) (*dtos.PaginatedListDto[dtos.EthernetSwitchVLANDto], error) {
+func (e *EthernetSwitchVLANService) GetVLANs(ctx context.Context, switchID uuid.UUID, search, orderBy, orderDirection string, page, pageSize int) (*dtos.PaginatedItemsDto[dtos.EthernetSwitchVLANDto], error) {
 	switchExist, err := e.switchIsExist(ctx, switchID)
 	if err != nil {
 		return nil, errors.Internal.Wrap(err, ErrorSwitchExistence)
@@ -148,75 +148,84 @@ func (e *EthernetSwitchVLANService) GetVLANs(ctx context.Context, switchID uuid.
 //  switchID - Ethernet switch ID
 //	createDto - EthernetSwitchVLANCreateDto
 //Return
-//	uuid.UUID - created VLAN ID
+//	dtos.EthernetSwitchVLANDto - created switch VLAN
 //	error - if an error occurs, otherwise nil
-func (e *EthernetSwitchVLANService) CreateVLAN(ctx context.Context, switchID uuid.UUID, createDto dtos.EthernetSwitchVLANCreateDto) (uuid.UUID, error) {
+func (e *EthernetSwitchVLANService) CreateVLAN(ctx context.Context, switchID uuid.UUID, createDto dtos.EthernetSwitchVLANCreateDto) (dtos.EthernetSwitchVLANDto, error) {
 	err := validators.ValidateEthernetSwitchVLANCreateDto(createDto)
 	if err != nil {
-		return [16]byte{}, err //we already wrap error in validators
+		return dtos.EthernetSwitchVLANDto{}, err //we already wrap error in validators
 	}
 	switchExist, err := e.switchIsExist(ctx, switchID)
 	if err != nil {
-		return [16]byte{}, errors.Internal.Wrap(err, ErrorSwitchExistence)
+		return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, ErrorSwitchExistence)
 	}
 	if !switchExist {
-		return [16]byte{}, errors.NotFound.New(ErrorSwitchNotFound)
+		return dtos.EthernetSwitchVLANDto{}, errors.NotFound.New(ErrorSwitchNotFound)
 	}
 	uniqVLANId, err := e.isVLANIdUnique(ctx, createDto.VlanID, switchID)
 	if err != nil {
-		return [16]byte{}, errors.Internal.Wrap(err, "VLAN ID uniqueness check error")
+		return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, "VLAN ID uniqueness check error")
 	}
 	if !uniqVLANId {
 		err = errors.Validation.New(errors.ValidationErrorMessage)
-		return [16]byte{}, errors.AddErrorContext(err, "VlanID", "vlan with this id already exist")
+		return dtos.EthernetSwitchVLANDto{}, errors.AddErrorContext(err, "VlanID", "vlan with this id already exist")
 	}
 	ethernetSwitch, err := e.switchRepository.GetByIDExtended(ctx, switchID, nil)
 	if err != nil {
-		return [16]byte{}, errors.Internal.Wrap(err, ErrorGetSwitch)
+		return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, ErrorGetSwitch)
 	}
 	entity := new(domain.EthernetSwitchVLAN)
 	err = mappers.MapDtoToEntity(createDto, entity)
 	entity.EthernetSwitchID = switchID
 	if err != nil {
-		return uuid.UUID{}, errors.Internal.Wrap(err, "failed to map ethernet switch port dto to entity")
+		return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, "failed to map ethernet switch port dto to entity")
 	}
-	insertedID, err := e.repository.Insert(ctx, *entity)
+	newEntity, err := e.repository.Insert(ctx, *entity)
 	if err != nil {
-		return [16]byte{}, errors.Internal.Wrap(err, "repository failed to insert VLAN")
+		return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, "repository failed to insert VLAN")
 	}
+	dto := dtos.EthernetSwitchVLANDto{}
 	switchManager := GetEthernetSwitchManager(*ethernetSwitch)
 	if switchManager == nil {
-		return insertedID, nil
+		err = mappers.MapEntityToDto(newEntity, &dto)
+		if err != nil {
+			return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, "error map entity to dto")
+		}
+		return dto, nil
 	}
 	err = switchManager.CreateVLAN(createDto.VlanID)
 	if err != nil {
-		return [16]byte{}, errors.Internal.Wrap(err, "create VLAN on switch failed")
+		return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, "create VLAN on switch failed")
 	}
 	for _, taggedPortID := range createDto.TaggedPorts {
 		switchPort, err := e.switchPortRepository.GetByID(ctx, taggedPortID)
 		if err != nil {
-			return [16]byte{}, errors.Internal.Wrap(err, ErrorGetPortByID)
+			return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, ErrorGetPortByID)
 		}
 		err = switchManager.AddTaggedVLANOnPort(switchPort.Name, createDto.VlanID)
 		if err != nil {
-			return [16]byte{}, errors.Internal.Wrap(err, ErrorAddTaggedVLAN)
+			return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, ErrorAddTaggedVLAN)
 		}
 	}
 	for _, untaggedPortID := range createDto.UntaggedPorts {
 		switchPort, err := e.switchPortRepository.GetByID(ctx, untaggedPortID)
 		if err != nil {
-			return [16]byte{}, errors.Internal.Wrap(err, ErrorGetPortByID)
+			return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, ErrorGetPortByID)
 		}
 		err = switchManager.AddUntaggedVLANOnPort(switchPort.Name, createDto.VlanID)
 		if err != nil {
-			return [16]byte{}, errors.Internal.Wrap(err, ErrorAddTaggedVLAN)
+			return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, ErrorAddTaggedVLAN)
 		}
 	}
 	err = switchManager.SaveConfig()
 	if err != nil {
-		return [16]byte{}, errors.Internal.Wrap(err, "save switch config failed")
+		return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, "save switch config failed")
 	}
-	return insertedID, nil
+	err = mappers.MapEntityToDto(newEntity, &dto)
+	if err != nil {
+		return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, "error map entity to dto")
+	}
+	return dto, nil
 }
 
 //UpdateVLAN Update ethernet switch VLAN
@@ -227,37 +236,38 @@ func (e *EthernetSwitchVLANService) CreateVLAN(ctx context.Context, switchID uui
 //	id - VLAN id
 //  updateDto - dtos.EthernetSwitchVLANUpdateDto DTO for updating entity
 //Return
+//	dtos.EthernetSwitchVLANDto - updated switch VLAN
 //	error - if an error occurs, otherwise nil
-func (e *EthernetSwitchVLANService) UpdateVLAN(ctx context.Context, switchID, id uuid.UUID, updateDto dtos.EthernetSwitchVLANUpdateDto) error {
+func (e *EthernetSwitchVLANService) UpdateVLAN(ctx context.Context, switchID, id uuid.UUID, updateDto dtos.EthernetSwitchVLANUpdateDto) (dtos.EthernetSwitchVLANDto, error) {
 	err := validators.ValidateEthernetSwitchVLANUpdateDto(updateDto)
 	if err != nil {
-		return err //we already wrap error in validators
+		return dtos.EthernetSwitchVLANDto{}, err //we already wrap error in validators
 	}
 	switchExist, err := e.switchIsExist(ctx, switchID)
 	if err != nil {
-		return errors.Internal.Wrap(err, ErrorSwitchExistence)
+		return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, ErrorSwitchExistence)
 	}
 	if !switchExist {
-		return errors.NotFound.New(ErrorSwitchNotFound)
+		return dtos.EthernetSwitchVLANDto{}, errors.NotFound.New(ErrorSwitchNotFound)
 	}
 
 	VLAN, err := e.GetVLANByID(ctx, switchID, id)
 	if err != nil {
-		return errors.Internal.Wrap(err, "get VLAN by id failed")
+		return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, "get VLAN by id failed")
 	}
 	if VLAN == nil {
-		return errors.NotFound.New("VLAN not found")
+		return dtos.EthernetSwitchVLANDto{}, errors.NotFound.New("VLAN not found")
 	}
 	ethernetSwitch, err := e.switchRepository.GetByIDExtended(ctx, switchID, nil)
 	if err != nil {
-		return errors.Internal.Wrap(err, ErrorGetSwitch)
+		return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, ErrorGetSwitch)
 	}
 	switchManager := GetEthernetSwitchManager(*ethernetSwitch)
 	if switchManager != nil {
 		//TODO: warning message log that switch manager is nil
 		err = e.updateVLANsOnPort(ctx, *VLAN, updateDto, switchManager)
 		if err != nil {
-			return errors.Internal.Wrap(err, "update VLANs on port failed")
+			return dtos.EthernetSwitchVLANDto{}, errors.Internal.Wrap(err, "update VLANs on port failed")
 		}
 	}
 
