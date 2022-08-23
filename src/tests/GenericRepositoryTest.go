@@ -34,7 +34,8 @@ func NewGenericRepositoryTest[EntityType interfaces.IEntityModel](repo interface
 //GenericRepositoryInsert test insert entity to db
 func (g *GenericRepositoryTest[EntityType]) GenericRepositoryInsert(entity EntityType) error {
 	var err error
-	g.InsertedID, err = g.Repository.Insert(g.Context, entity)
+	newEntity, err := g.Repository.Insert(g.Context, entity)
+	g.InsertedID = newEntity.GetID()
 	if err != nil {
 		return fmt.Errorf("insert failed: %s", err)
 	}
@@ -67,7 +68,7 @@ func (g *GenericRepositoryTest[EntityType]) GenericRepositoryUpdate(updEntity En
 		return err
 	}
 	beforeUpdTime := reflect.ValueOf(*entity).FieldByName("UpdatedAt").Interface().(time.Time)
-	err = g.Repository.Update(g.Context, &updEntity)
+	_, err = g.Repository.Update(g.Context, &updEntity)
 	if err != nil {
 		return fmt.Errorf("update failed:  %s", err)
 	}

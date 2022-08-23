@@ -68,10 +68,11 @@ func Test_EthernetSwitchVLANService_Prepare(t *testing.T) {
 		//  pragma: allowlist nextline secret
 		Password: "AutoTesting",
 	}
-	ethernetSwitchIDVLAN, err = switchRepo.Insert(context.TODO(), switchEntity)
+	ethernetSwitchVLAN, err := switchRepo.Insert(context.TODO(), switchEntity)
 	if err != nil {
 		t.Errorf("create switch failed: %s", err)
 	}
+	ethernetSwitchIDVLAN = ethernetSwitchVLAN.ID
 }
 
 func Test_EthernetSwitchVLANService_CreateVLANWithoutSwitch(t *testing.T) {
@@ -93,10 +94,11 @@ func Test_EthernetSwitchVLANService_CreateVLAN(t *testing.T) {
 	}, VlanID: 2}
 	service := switchVLANService.(*services.EthernetSwitchVLANService)
 	var err error
-	VLANEntityID, err = service.CreateVLAN(context.TODO(), ethernetSwitchIDVLAN, dto)
+	VLANEntity, err := service.CreateVLAN(context.TODO(), ethernetSwitchIDVLAN, dto)
 	if err != nil {
 		t.Errorf("create VLAN failed: %s", err)
 	}
+	VLANEntityID = VLANEntity.ID
 }
 
 func Test_EthernetSwitchVLANService_CreateFailByNonUniqueVLANID(t *testing.T) {
@@ -119,7 +121,7 @@ func Test_EthernetSwitchVLANService_UpdateVLAN(t *testing.T) {
 		TaggedPorts:   []uuid.UUID{updTaggedPort},
 	}}
 	service := switchVLANService.(*services.EthernetSwitchVLANService)
-	err := service.UpdateVLAN(context.TODO(), ethernetSwitchIDVLAN, VLANEntityID, dto)
+	_, err := service.UpdateVLAN(context.TODO(), ethernetSwitchIDVLAN, VLANEntityID, dto)
 	if err != nil {
 		t.Errorf("update port failed: %s", err)
 	}
@@ -150,8 +152,8 @@ func Test_EthernetSwitchVLANService_GetVLANs(t *testing.T) {
 	if err != nil {
 		t.Errorf("get VLANs failed: %s", err)
 	}
-	if len(*VLANs.Items) != 10 {
-		t.Errorf("get ports failed: wrong number of items, got %d, expect 10", len(*VLANs.Items))
+	if len(VLANs.Items) != 10 {
+		t.Errorf("get ports failed: wrong number of items, got %d, expect 10", len(VLANs.Items))
 	}
 }
 

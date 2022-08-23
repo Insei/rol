@@ -60,8 +60,8 @@ func Test_DeviceTemplateService_GetList(t *testing.T) {
 	if templates.Items == nil {
 		t.Error("templates not found")
 	}
-	if len(*templates.Items) != serviceTemplatesCount {
-		t.Errorf("unexpected templates count: %d, expect %d", len(*templates.Items), serviceTemplatesCount)
+	if len(templates.Items) != serviceTemplatesCount {
+		t.Errorf("unexpected templates count: %d, expect %d", len(templates.Items), serviceTemplatesCount)
 	}
 }
 
@@ -73,7 +73,7 @@ func Test_DeviceTemplateService_Search(t *testing.T) {
 	if templates.Items == nil {
 		t.Error("templates not found")
 	}
-	if len(*templates.Items) != 1 {
+	if len(templates.Items) != 1 {
 		t.Error("search failed")
 	}
 }

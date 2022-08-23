@@ -40,7 +40,6 @@ func Test_EthernetSwitchEntityToDto(t *testing.T) {
 			ID:        uuid.New(),
 			CreatedAt: now,
 			UpdatedAt: now,
-			DeletedAt: &now,
 		},
 		Name:        "ASD",
 		Serial:      "asd",

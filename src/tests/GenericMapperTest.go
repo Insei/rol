@@ -41,8 +41,10 @@ func compareDtoAndEntity(from interface{}, to interface{}) error {
 	for i := 0; i < num; i++ {
 		reflectField := fromReflectFields.Field(i)
 		reflectValue := fromReflectValues.Field(i)
+		knd := reflectValue.Kind()
+		fmt.Println(knd)
 
-		if reflectValue.Kind() == reflect.Struct && reflectField.Tag != "gorm:\"index\"" {
+		if reflectValue.Kind() == reflect.Struct && reflectField.Tag != "gorm:\"index\"" && reflectField.Name != "DeletedAt" {
 			if err := compareDtoAndEntity(reflectValue.Interface(), to); err != nil {
 				return err
 			}
