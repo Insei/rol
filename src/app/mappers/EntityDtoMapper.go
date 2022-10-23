@@ -6,6 +6,12 @@ import (
 	"rol/dtos"
 )
 
+func mapEntityToBaseDto(baseEntity domain.Entity, baseDto *dtos.BaseDto) {
+	baseDto.UpdatedAt = baseEntity.UpdatedAt
+	baseDto.CreatedAt = baseEntity.CreatedAt
+	baseDto.ID = baseEntity.ID
+}
+
 //MapDtoToEntity map a DTO to its corresponding entity
 //Params
 //	dto - DTO struct
@@ -14,6 +20,16 @@ import (
 //  error - if error occurs return error, otherwise nil
 func MapDtoToEntity(dto interface{}, entity interface{}) error {
 	switch dto.(type) {
+	//TFTPConfig
+	case dtos.TFTPServerCreateDto:
+		MapTFTPServerCreateDtoToEntity(dto.(dtos.TFTPServerCreateDto), entity.(*domain.TFTPConfig))
+	case dtos.TFTPServerUpdateDto:
+		MapTFTPServerUpdateDtoToEntity(dto.(dtos.TFTPServerUpdateDto), entity.(*domain.TFTPConfig))
+	//TFTPPathRatio
+	case dtos.TFTPPathCreateDto:
+		MapTFTPPathCreateDtoToEntity(dto.(dtos.TFTPPathCreateDto), entity.(*domain.TFTPPathRatio))
+	case dtos.TFTPPathUpdateDto:
+		MapTFTPPathUpdateDtoToEntity(dto.(dtos.TFTPPathUpdateDto), entity.(*domain.TFTPPathRatio))
 	// EthernetSwitch
 	case dtos.EthernetSwitchCreateDto:
 		MapEthernetSwitchCreateDto(dto.(dtos.EthernetSwitchCreateDto), entity.(*domain.EthernetSwitch))
@@ -53,6 +69,12 @@ func MapDtoToEntity(dto interface{}, entity interface{}) error {
 //  error - if error occurs return error, otherwise nil
 func MapEntityToDto(entity interface{}, dto interface{}) error {
 	switch entity.(type) {
+	//TFTPConfig
+	case domain.TFTPConfig:
+		MapTFTPConfigToDto(entity.(domain.TFTPConfig), dto.(*dtos.TFTPServerDto))
+	//TFTPPathRatio
+	case domain.TFTPPathRatio:
+		MapTFTPPathToDto(entity.(domain.TFTPPathRatio), dto.(*dtos.TFTPPathDto))
 	// EthernetSwitch
 	case domain.EthernetSwitch:
 		MapEthernetSwitchToDto(entity.(domain.EthernetSwitch), dto.(*dtos.EthernetSwitchDto))
