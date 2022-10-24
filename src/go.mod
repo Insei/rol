@@ -6,6 +6,7 @@ require (
 	github.com/Azure/go-asynctask v1.1.1
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
+	github.com/pin/tftp/v3 v3.0.0
 	github.com/reiver/go-telnet v0.0.0-20180421082511-9ff0b2ab096e
 	github.com/sirupsen/logrus v1.8.1
 	github.com/swaggo/swag v1.8.1

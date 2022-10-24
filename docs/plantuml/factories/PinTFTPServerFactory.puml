@@ -1,0 +1,21 @@
+@startuml
+
+!include ../interfaces/ITFTPServerFactory.puml
+!include ../interfaces/ITFTPServer.puml
+
+package infrastructure {
+    class PinTFTPServer {
+    }
+    PinTFTPServer .down.|> ITFTPServer
+
+    class PinTFTPServerFactory
+
+    PinTFTPServerFactory .down.|> ITFTPServerFactory
+    PinTFTPServerFactory .[hidden]down. ITFTPServer
+
+    note "PinTFTPServerFactory produces PinTFTPServer's" as TFTPServersNote
+    PinTFTPServer <.up. TFTPServersNote
+    PinTFTPServerFactory .down. TFTPServersNote
+}
+
+@enduml

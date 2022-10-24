@@ -50,6 +50,7 @@ func main() {
 			infrastructure.NewAppLogRepository,
 			infrastructure.NewGormTFTPConfigRepository,
 			infrastructure.NewGormTFTPPathRatioRepository,
+			infrastructure.NewPinTFTPServerFactory,
 			infrastructure.NewLogrusLogger,
 			infrastructure.NewEthernetSwitchPortRepository,
 			infrastructure.NewDeviceTemplateStorage,

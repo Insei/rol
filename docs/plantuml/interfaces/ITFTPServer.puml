@@ -1,0 +1,40 @@
+@startuml
+
+!include ../entities/TFTPServerState.puml
+
+package app {
+    interface ITFTPServer {
+        +ReloadConfig(config domain.TFTPConfig)
+        --
+        +ReloadPaths(paths []domain.TFTPPathRatio)
+        --
+        +Start() error
+        --
+        +Stop()
+        --
+        +GetState() domain.TFTPServerState
+    }
+    ITFTPServer::GetState .. TFTPServerState
+
+    note left of ITFTPServer::ReloadConfig
+    Reload configuration for TFTP server from config
+    end note
+
+    note left of ITFTPServer::ReloadPaths
+    Reload file paths configuration for TFTP server (On fly)
+    end note
+
+    note left of ITFTPServer::Start
+    Start TFTP server
+    end note
+
+    note left of ITFTPServer::Stop
+    Stop TFTP server
+    end note
+
+    note left of ITFTPServer::GetState
+    Get current state of TFTP server
+    end note
+}
+
+@enduml
