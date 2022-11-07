@@ -1,6 +1,7 @@
 package main
 
 import (
+	"go.uber.org/fx"
 	"os"
 	"path/filepath"
 	"rol/app/services"
@@ -8,10 +9,7 @@ import (
 	"rol/infrastructure"
 	"rol/webapi"
 	"rol/webapi/controllers"
-
 	_ "rol/webapi/swagger"
-
-	"go.uber.org/fx"
 )
 
 //GetGlobalDIParameters get global parameters for DI
@@ -48,17 +46,20 @@ func main() {
 			infrastructure.NewEthernetSwitchRepository,
 			infrastructure.NewHTTPLogRepository,
 			infrastructure.NewAppLogRepository,
+			infrastructure.NewProjectRepository,
 			infrastructure.NewLogrusLogger,
 			infrastructure.NewEthernetSwitchPortRepository,
 			infrastructure.NewDeviceTemplateStorage,
 			infrastructure.NewYamlHostNetworkConfigStorage,
 			infrastructure.NewHostNetworkManager,
+			infrastructure.NewUserProjectManager,
 			// Application logic
 			services.NewEthernetSwitchService,
 			services.NewHTTPLogService,
 			services.NewAppLogService,
 			services.NewDeviceTemplateService,
 			services.NewHostNetworkService,
+			services.NewUserProjectService,
 			// WEB API -> GIN Server
 			webapi.NewGinHTTPServer,
 			// WEB API -> GIN Controllers
@@ -69,6 +70,8 @@ func main() {
 			controllers.NewDeviceTemplateController,
 			controllers.NewHostNetworkVlanController,
 			controllers.NewHostNetworkBridgeController,
+			controllers.NewUserProjectController,
+			controllers.NewHostNetworkTrafficGinController,
 		),
 		fx.Invoke(
 			//Register logrus hooks
@@ -83,6 +86,8 @@ func main() {
 			controllers.RegisterDeviceTemplateController,
 			controllers.RegisterHostNetworkVlanController,
 			controllers.RegisterHostNetworkBridgeController,
+			controllers.RegisterUserProjectController,
+			controllers.RegisterHostNetworkTrafficGinController,
 			//Start GIN http server
 			webapi.StartHTTPServer,
 		),
