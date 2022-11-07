@@ -1,0 +1,20 @@
+@startuml
+
+!include ../interfaces/IProjectManager.puml
+!include ../repositories/GormProjectRepository.puml
+!include ../managers/HostNetworkManager.puml
+
+package infrastructure {
+    class UserProjectManager {
+        -repository     IGenericRepository<domain.Project>
+        --
+        -networkManager IHostNetworkManager
+        --
+        -logger         *logrus.Logger
+    }
+
+    UserProjectManager --|> IProjectManager
+    UserProjectManager::repository -- GormProjectRepository
+    UserProjectManager::networkManager -- HostNetworkManager
+}
+@enduml

@@ -1,0 +1,27 @@
+@startuml
+
+!include ../repositories/GormProjectRepository.puml
+!include ../interfaces/IProjectManager.puml
+
+package app {
+    class UserProjectService {
+        -repository IGenericRepository<domain.Project>
+        --
+        -manager    IProjectManager
+        --
+        -logger     *logrus.Logger
+        --
+        +GetList(ctx context.Context, search string, orderBy string, orderDirection string, page int, pageSize int) (PaginatedItemsDto[ProjectDto], error)
+        --
+        +GetByID(ctx context.Context, id uuid.UUID) (ProjectDto, error)
+        --
+        +Create(ctx context.Context, createDto ProjectCreateDto) (ProjectDto, error)
+        --
+        +Delete(ctx context.Context, id uuid.UUID) error
+    }
+
+    GormProjectRepository -- UserProjectService::repository
+    IProjectManager -- UserProjectService::manager
+    IProjectManager -[hidden]left- UserProjectService::manager
+}
+@enduml

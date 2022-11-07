@@ -1,0 +1,13 @@
+@startuml
+!include ProjectBaseDto.puml
+!include ../BaseDto.puml
+
+package dtos {
+    class ProjectDto {
+        +BridgeName string
+    }
+    ProjectDto --* ProjectBaseDto
+    ProjectDto --* BaseDto
+}
+
+@enduml

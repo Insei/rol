@@ -1,0 +1,17 @@
+@startuml
+package app {
+    interface IProjectManager {
+        +CreateProject(project domain.Project, projectSubnet string) (domain.Project, error)
+        --
+        +DeleteProject(project domain.Project) error
+    }
+
+    note left of IProjectManager::CreateProject
+    Creates project and bridge with postrouting traffic rule for it
+    end note
+
+    note left of IProjectManager::DeleteProject
+    Delete project and its bridge with postrouting traffic rule
+    end note
+}
+@enduml
