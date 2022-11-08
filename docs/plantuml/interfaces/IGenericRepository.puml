@@ -1,20 +1,20 @@
 @startuml IGenericRepository
 
 package app {
-    interface IGenericRepository<EntityType> {
+    interface IGenericRepository<IDType, interfaces.IEntityModel[IDType]> {
         +GetList(ctx context.Context, orderBy string, orderDirection string, page int, size int, queryBuilder interfaces.IQueryBuilder) ([]EntityType, error)
         --
-        +Count(ctx context.Context, queryBuilder interfaces.IQueryBuilder) (int64, error)
+        +Count(ctx context.Context, queryBuilder interfaces.IQueryBuilder) (int, error)
         --
         +NewQueryBuilder(ctx context.Context) interfaces.IQueryBuilder
         --
-        +GetById(ctx context.Context, id uuid.UUID) (EntityType, error)
+        +GetById(ctx context.Context, id IDType) (EntityType, error)
         --
         +Update(ctx context.Context, entity EntityType) (EntityType, error)
         --
         +Insert(ctx context.Context, entity EntityType) (EntityType, error)
         --
-        +Delete(ctx context.Context, id uuid.UUID) error
+        +Delete(ctx context.Context, id IDType) error
         --
         +CloseDb() error
     }
