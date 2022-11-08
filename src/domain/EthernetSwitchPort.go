@@ -5,7 +5,7 @@ import "github.com/google/uuid"
 //EthernetSwitchPort ethernet switch port entity
 type EthernetSwitchPort struct {
 	//Entity - nested base entity
-	Entity
+	Entity[uuid.UUID]
 	//Name - name of switch port
 	Name string
 	//EthernetSwitchID - id of switch port

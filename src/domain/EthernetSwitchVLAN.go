@@ -4,7 +4,7 @@ import "github.com/google/uuid"
 
 //EthernetSwitchVLAN ethernet switch VLAN entity
 type EthernetSwitchVLAN struct {
-	Entity
+	Entity[uuid.UUID]
 	VlanID           int
 	EthernetSwitchID uuid.UUID `gorm:"index;size:36"`
 	UntaggedPorts    string    `gorm:"type:text"`

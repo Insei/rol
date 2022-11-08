@@ -3,31 +3,37 @@ package domain
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-//Entity base entity structure
-type Entity struct {
+//BaseEntity structure
+type Entity[IDType comparable] struct {
 	//	ID - entity identifier
-	ID uuid.UUID `gorm:"primary_key;"`
+	ID IDType `gorm:"primary_key;"`
 	//	CreatedAt - time when the entity was created
 	CreatedAt time.Time `gorm:"index"`
 	//	UpdatedAt - time when the entity was updated
-	UpdatedAt time.Time `gorm:"index"`
+	UpdatedAt *time.Time `gorm:"index"`
 	//	DeletedAt - time when the entity was deleted
 	DeletedAt gorm.DeletedAt
 }
 
-//GetID gets the id of the entity
-func (e Entity) GetID() uuid.UUID {
+//GetID of the entity
+func (e Entity[IDType]) GetID() IDType {
 	return e.ID
 }
 
-// BeforeCreate will set a UUID rather than numeric ID.
-func (e *Entity) BeforeCreate(_ *gorm.DB) (err error) {
-	if e.ID == uuid.Nil {
-		e.ID = uuid.New()
-	}
-	return
+//GetCreatedAt time
+func (e Entity[IDType]) GetCreatedAt() time.Time {
+	return e.CreatedAt
+}
+
+//GetUpdatedAt time
+func (e Entity[IDType]) GetUpdatedAt() *time.Time {
+	return e.UpdatedAt
+}
+
+//GetDeletedAt time
+func (e Entity[IDType]) GetDeletedAt() *time.Time {
+	return &e.DeletedAt.Time
 }

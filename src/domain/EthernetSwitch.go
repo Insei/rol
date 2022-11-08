@@ -1,9 +1,11 @@
 package domain
 
+import "github.com/google/uuid"
+
 //EthernetSwitch ethernet switch entity
 type EthernetSwitch struct {
 	//	Entity - nested base entity
-	Entity
+	Entity[uuid.UUID]
 	//	Name - name of the switch
 	Name string
 	//	Serial - serial number of the switch
