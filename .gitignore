@@ -17,6 +17,11 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+# binaries and configuration
+src/go_build_main_go
+src/rol
+src/hostNetworkConfig.yaml
+
 # Go workspace file
 go.work
 
